@@ -1,0 +1,46 @@
+@startuml
+title My Keybindings
+
+card ctrl [
+    <b>ctrl
+    --
+    general commands
+]
+card openFile [
+    <b>o
+    --
+    open file
+]
+ctrl -- openFile
+card closeFile [
+    <b>w
+    --
+    close file
+]
+ctrl -- closeFile
+
+card space [
+    <b>space
+    --
+    action
+]
+
+card shift [
+    <b>shift
+    --
+    intensify
+]
+card moveUp [
+    <b>K
+    --
+    move up
+]
+shift -- moveUp
+card moveDown [
+    <b>J
+    --
+    move down
+]
+shift -- moveDown
+
+@enduml

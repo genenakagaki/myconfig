@@ -1,6 +1,6 @@
 #+PROPERTY: header-args :tangle ~/.emacs.d/init.el
 
-* My Emacs Configuration
+*My Emacs Configuration
 ** Initial Setup
    These have to be called first
 
@@ -24,7 +24,7 @@
       (setq use-package-always-ensure t)
       (setq use-package-always-demand t)
     #+end_src
-
+    
 *** Files
     #+begin_src emacs-lisp :results none
       ;; Keep .emacs.d directory clean
@@ -49,8 +49,6 @@
 
       ;; Autosave changed files
       (use-package super-save
-        :ensure t
-        :defer 1
         :diminish super-save-mode
         :config
         (super-save-mode +1)
@@ -59,13 +57,7 @@
 
 *** Keybindings
     #+begin_src emacs-lisp :results none
-      ;; Leader key setup
-      (use-package general
-        :config
-        (general-create-definer gn/leader-keys
-          :keymaps 'motion
-          :prefix "SPC"
-          :global-prefix "C-SPC"))
+      (use-package general)
     #+end_src
     
 ** Keybindings
@@ -83,48 +75,67 @@
          (evil-define-key 'insert 'global
            (kbd "C-g") 'evil-normal-state)
 
-         (evil-define-key 'motion 'global
-           (kbd "SPC") nil
-           (kbd "RET") nil
-           (kbd "C-o") nil ; Open files in buffer
-           (kbd "C-O") nil ; Open new file
-           (kbd "C-k") nil
+         (general-def '(motion normal visual)
+           "SPC" nil
+           "RET" nil
+           "TAB" nil
+           "C-o" nil ; Open files
+           "C-O" nil ; Open new files
+           "C-k" nil
+           ;; Always use visual motion
+           "j" 'evil-next-visual-line
+           "k" 'evil-previous-visual-line
+           ;; Custom motion commands
+           "J" 'evil-scroll-down
+           "K" 'evil-scroll-up
            )
 
-         ;; Use visual line motions even outside of visual-line-mode buffers
-         (evil-global-set-key 'motion "j" 'evil-next-visual-line)
-         (evil-global-set-key 'motion "k" 'evil-previous-visual-line)
+         (general-def 'normal
+           ;; Custom delete commands
+           "d" (general-key-dispatch 'evil-delete
+                 "n" 'evil-join))
 
          (evil-set-initial-state 'messages-buffer-mode 'normal)
          (evil-set-initial-state 'dashboard-mode 'normal))
 
        (use-package evil-collection
          :after evil
-         :ensure t
          :config
          (evil-collection-init))
+
+
      #+end_src
 
 **** Keybindings
      #+begin_src emacs-lisp :results none
-       ;; Make ESC quit prompts
        (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
+
        ;; File keybindings
-       (global-set-key (kbd "C-o") 'switch-to-buffer)
-       (global-set-key (kbd "C-o") 'find-file)
+       (general-def
+         "C-o" 'find-file
+         ;"C-w" 'kill-current-buffer
+         )
+
+       ;; leader key
+       (general-create-definer gn/leader-keys
+         :states '(motion normal visual)
+         :prefix "SPC"
+         :keymaps 'override
+         :global-prefix "C-SPC")
 
        (gn/leader-keys
+         ":" 'execute-extended-command
          "h" '(:ignore h :which-key "help")
          "hh" 'help-for-help
+         "hb" 'describe-bindings
          "hf" 'describe-function
          "hk" 'describe-key
          "hv" 'describe-variable
-         "e" '(:ignore e :which-key "evaluate")
-         "ed" 'eval-defun
          "m" '(:ignore m :which-key "modes")
          "mw" 'whitespace-mode
          )
+
 
      #+end_src
 
@@ -204,18 +215,48 @@
 
 ** Packages
 *** Org Mode
-    #+begin_src emacs-lisp :results none
-;      (use-package org
 
-;        )
-      ;;(setq org-src-tab-acts-natively t)
-                                               ;(gn/leader-keys
-                                               ;  "o" '(:ignore o :which-key "org mode")
-                                               ;  "ob" '(:ignore ob :which-key "org babel")
-                                               ;  "obt" 'org-babel-tangle)
+    #+begin_src emacs-lisp :results none
+      (general-def '(motion normal visual) org-mode-map
+        "K" 'org-previous-visible-heading
+        "J" 'org-next-visible-heading
+        )
+
+      (gn/leader-keys 'motion org-mode-map
+        "e" 'org-ctrl-c-ctrl-c
+        "s" '(:ignore s :which-key "src")
+        "se" 'org-edit-special
+        "st" 'org-babel-tangle
+        )
+
+      (gn/leader-keys 'motion org-src-mode-map
+        "s" '(:ignore s :which-key "src")
+        "se" 'org-edit-src-exit
+        )
+
+
+
+
+
+            ;;(setq org-src-tab-acts-natively t)
+                                                     ;(gn/leader-keys
+                                                     ;  "o" '(:ignore o :which-key "org mode")
+                                                     ;  "ob" '(:ignore ob :which-key "org babel")
+                                                     ;  "obt" 'org-babel-tangle)
+    #+end_src
+*** Magit
+    #+begin_src emacs-lisp :results none
+      (use-package magit
+        :config
+        ;; Close transient with ESC
+        (general-def transient-map
+          "<escape>" 'transient-quit-one)
+
+        (gn/leader-keys
+          "v" 'magit-status)
+        )
     #+end_src
 
-
     
-
-
+    
+    
