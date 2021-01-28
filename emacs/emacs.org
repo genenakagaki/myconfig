@@ -14,6 +14,7 @@
                                ("elpa" . "https://elpa.gnu.org/packages/")))
       (package-initialize)
 
+
       ;; Setup use-package
       (unless (package-installed-p 'use-package)
         (package-refresh-contents)
@@ -119,13 +120,16 @@
 
        ;; leader key
        (general-create-definer gn/leader-keys
-         :states '(motion normal visual)
+         :states '(normal visual)
          :prefix "SPC"
          :keymaps 'override
          :global-prefix "C-SPC")
 
-       (gn/leader-keys
+       (gn/leader-keys 'normal
          ":" 'execute-extended-command
+         "b" '(:ignore b :which-key "buffer")
+         "bs" 'save-buffer
+         "bq" 'kill-current-buffer
          "h" '(:ignore h :which-key "help")
          "hh" 'help-for-help
          "hb" 'describe-bindings
@@ -236,16 +240,15 @@
         ;; Capture
         (defvar gn/org-capture-path "~/todo/inbox.org"
           "The path to the .org file which org-capture places the entry")
-
         (setq org-capture-templates
               '(("i" "Inbox" entry (file gn/org-capture-path)
-                 "* ")))
+                 "* %?")))
         (gn/leader-keys 
           "c" 'org-capture
           )
 
         (gn/leader-keys 'normal org-capture-mode-map
-          "c" 'org-capture-finalize)
+          "e" 'org-capture-finalize)
 
         (gn/leader-keys 'normal org-mode-map
           "s" '(:ignore s :which-key "src")
@@ -256,8 +259,10 @@
           )
 
         (gn/leader-keys 'normal org-src-mode-map
-          "s" '(:ignore s :which-key "src")
-          "se" 'org-edit-src-exit
+          "bs" nil)
+a
+        (gn/leader-keys 'normal org-src-mode-map
+          "bs" 'org-edit-src-exit
           )
         )
     #+end_src
@@ -294,4 +299,4 @@
     
     
     
-    
+     
