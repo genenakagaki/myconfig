@@ -1,2 +1,4 @@
 #!/bin/sh
-emacs -batch emacs.org --eval '(org-babel-tangle)'
+emacs -batch emacs/emacs.org --eval '(progn (load "~/config/emacs/init.el"))'
+
+
