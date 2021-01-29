@@ -1,5 +1,5 @@
 #+PROPERTY: header-args :tangle ~/.emacs.d/init.el
-
+ 
 * My Emacs Config
 ** Initial Setup
    These have to be at the top of the init.el file
@@ -54,11 +54,18 @@
         :config
         (super-save-mode +1)
         (setq super-save-auto-save-when-idle t))
+
+      ;; Undo and redo
+      (use-package undo-tree
+        :config
+        (global-undo-tree-mode))
     #+end_src
 
 *** Keybindings
     #+begin_src emacs-lisp :results none
-      (use-package general)
+      (use-package general
+        :config
+        (general-evil-setup))
     #+end_src
     
 ** Keybindings
@@ -73,25 +80,28 @@
          (setq evil-want-C-i-jump nil)
          :config
          (evil-mode 1)
+         (setq evil-undo-system 'undo-tree)
          (evil-define-key 'insert 'global
            (kbd "C-g") 'evil-normal-state)
 
-         (general-def '(motion normal visual)
+         (general-nvmap
            "SPC" nil
            "RET" nil
            "TAB" nil
            "C-o" nil ; Open files
            "C-O" nil ; Open new files
            "C-k" nil
+
            ;; Always use visual motion
            "j" 'evil-next-visual-line
            "k" 'evil-previous-visual-line
+
            ;; Custom motion commands
            "J" 'evil-scroll-down
            "K" 'evil-scroll-up
            )
 
-         (general-def 'normal
+         (general-nmap
            ;; Custom delete commands
            "d" (general-key-dispatch 'evil-delete
                  "n" 'evil-join))
@@ -105,6 +115,9 @@
          (evil-collection-init))
 
 
+
+
+
      #+end_src
 
 **** Keybindings
@@ -112,38 +125,56 @@
        (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
        ;; File keybindings
-       (general-def
+       (general-nvmap
          "C-a" 'mark-whole-buffer
          "C-o" 'find-file
          ;"C-w" 'kill-current-buffer
          )
 
-       ;; leader key
-       (general-create-definer gn/leader-keys
+       ;; leader keys
+       (general-create-definer gn/leader-nvmap
          :states '(normal visual)
          :prefix "SPC"
-         :keymaps 'override
-         :global-prefix "C-SPC")
+         :keymaps 'override)
 
-       (gn/leader-keys 'normal
+       (general-create-definer gn/leader-nmap
+         :states 'normal
+         :prefix "SPC"
+         :keymaps 'override)
+
+       (general-create-definer gn/leader-vmap
+         :states 'visual
+         :prefix "SPC"
+         :keymaps 'override)
+
+       (gn/leader-nmap
          ":" 'execute-extended-command
-         "b" '(:ignore b :which-key "buffer")
-         "bs" 'save-buffer
-         "bq" 'kill-current-buffer
          "h" '(:ignore h :which-key "help")
          "hh" 'help-for-help
          "hb" 'describe-bindings
          "hf" 'describe-function
          "hk" 'describe-key
          "hv" 'describe-variable
+         "b" '(:ignore b :which-key "buffer")
+         "bs" 'save-buffer
+         "bq" 'kill-current-buffer
+         "w" '(:ignore w :which-key "window")
+         "wq" 'evil-window-delete
+         "wh" 'evil-window-left
+         "wH" 'evil-window-move-far-left
+         "wl" 'evil-window-right
+         "wL" 'evil-window-move-far-right
+         "wk" 'evil-window-top
+         "wK" 'evil-window-move-very-top
+         "wj" 'evil-window-bottom
+         "wJ" 'evil-window-move-very-bottom
          "m" '(:ignore m :which-key "modes")
-         "mw" 'whitespace-mode
-         )
+         "mw" 'whitespace-mode)
 
-       (gn/leader-keys 'normal emacs-lisp-mode-map
+       (gn/leader-nmap emacs-lisp-mode-map
          "e" 'eval-defun)
 
-       (gn/leader-keys 'visual emacs-lisp-mode-map
+       (gn/leader-vmap emacs-lisp-mode-map
          "e" 'eval-region)
      #+end_src
 
@@ -227,15 +258,13 @@
       (use-package org
         :config
         ;; General org mode stuff
-        (gn/leader-keys '(motion normal visual) org-mode-map
-          "e" 'org-ctrl-c-ctrl-c
-          )
+        (gn/leader-nvmap org-mode-map
+          "e" 'org-ctrl-c-ctrl-c)
 
         ;; Movement
-        (general-def '(motion normal visual) org-mode-map
+        (general-nvmap org-mode-map
           "K" 'org-previous-visible-heading
-          "J" 'org-next-visible-heading
-          )
+          "J" 'org-next-visible-heading)
 
         ;; Capture
         (defvar gn/org-capture-path "~/todo/inbox.org"
@@ -243,14 +272,16 @@
         (setq org-capture-templates
               '(("i" "Inbox" entry (file gn/org-capture-path)
                  "* %?")))
-        (gn/leader-keys 
-          "c" 'org-capture
+        (gn/leader-nvmap 
+          "o" '(:ignore o :which-key "org-mode")
+          "oc" 'org-capture
           )
 
-        (gn/leader-keys 'normal org-capture-mode-map
-          "e" 'org-capture-finalize)
+        (general-nmap org-capture-mode-map
+          [remap save-buffer] 'org-capture-finalize
+          [rempa kill-current-buffer] 'org-capture-kill)
 
-        (gn/leader-keys 'normal org-mode-map
+        (gn/leader-nmap org-mode-map
           "s" '(:ignore s :which-key "src")
           "se" 'org-edit-special
           "st" 'org-babel-tangle
@@ -258,12 +289,9 @@
           "it" 'org-insert-structure-template
           )
 
-        (gn/leader-keys 'normal org-src-mode-map
-          "bs" nil)
-a
-        (gn/leader-keys 'normal org-src-mode-map
-          "bs" 'org-edit-src-exit
-          )
+        (general-nmap org-src-mode-map
+          [remap save-buffer] 'org-edit-src-exit
+          [remap kill-current-buffer] 'org-edit-src-abort)
         )
     #+end_src
 *** PlantUML
@@ -277,12 +305,12 @@ a
         (add-to-list
          'org-src-lang-modes '("plantuml" . plantuml))
 
-        (gn/leader-keys '(motion normal visual) 'plantuml-mode-map
+        (gn/leader-nvmap 'plantuml-mode-map
          "e" 'plantuml-preview-buffer)
         )
     #+end_src
     
-
+    
 *** Magit
     #+begin_src emacs-lisp :results none
       (use-package magit
@@ -291,7 +319,7 @@ a
         (general-def transient-map
           "<escape>" 'transient-quit-one)
 
-        (gn/leader-keys
+        (gn/leader-nvmap
           "v" 'magit-status)
         )
     #+end_src
@@ -300,3 +328,4 @@ a
     
     
      
+    
