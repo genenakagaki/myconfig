@@ -124,10 +124,13 @@
      #+begin_src emacs-lisp :results none
        (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
+       (general-def
+         "C-SPC" nil)
+
        ;; File keybindings
        (general-nvmap
          "C-a" 'mark-whole-buffer
-         "C-o" 'find-file
+         "C-o" 'find-file-other-window
          ;"C-w" 'kill-current-buffer
          )
 
@@ -328,4 +331,5 @@
     
     
      
+    
     
