@@ -105,6 +105,10 @@
            ;; Custom delete commands
            "d" (general-key-dispatch 'evil-delete
                  "n" 'evil-join))
+         ;; `evil-delete' is not bound in `evil-visual-state-map' by default but
+         ;; inherited from `evil-normal-state-map'
+         ;; This keeps the default behavior in visual state
+         (general-vmap "d" 'evil-delete)
 
          (evil-set-initial-state 'messages-buffer-mode 'normal)
          (evil-set-initial-state 'dashboard-mode 'normal))
@@ -163,13 +167,14 @@
          "bq" 'kill-current-buffer
          "w" '(:ignore w :which-key "window")
          "wq" 'evil-window-delete
+         "wQ" 'delete-other-windows
          "wh" 'evil-window-left
          "wH" 'evil-window-move-far-left
          "wl" 'evil-window-right
          "wL" 'evil-window-move-far-right
-         "wk" 'evil-window-top
+         "wk" 'evil-window-up
          "wK" 'evil-window-move-very-top
-         "wj" 'evil-window-bottom
+         "wj" 'evil-window-down
          "wJ" 'evil-window-move-very-bottom
          "m" '(:ignore m :which-key "modes")
          "mw" 'whitespace-mode)
@@ -250,6 +255,12 @@
    Prevent tabs when indenting
    #+begin_src emacs-lisp
      (setq-default indent-tabs-mode nil)
+
+     (column-number-mode)
+     (global-display-line-numbers-mode t)
+
+     (dolist (mode '(org-mode-hook))
+       (add-hook mode (lambda () (display-line-numbers-mode 0))))
    #+end_src
 
    #+RESULTS:
@@ -257,7 +268,7 @@
 ** Packages
 *** Org Mode
 
-    #+begin_src emacs-lisp :results none
+    #+begin_src emacs-lisp 
       (use-package org
         :config
         ;; General org mode stuff
@@ -295,8 +306,20 @@
         (general-nmap org-src-mode-map
           [remap save-buffer] 'org-edit-src-exit
           [remap kill-current-buffer] 'org-edit-src-abort)
+
+        (use-package ox
+          :config
+          (use-package ox-latex)
+          (use-package dvipng)
+          )
+
         )
+
     #+end_src
+
+    #+RESULTS:
+    : t
+
 *** PlantUML
     #+begin_src emacs-lisp :results none
       (use-package plantuml-mode
