@@ -129,7 +129,8 @@
        (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
        (general-def
-         "C-SPC" nil)
+         "C-SPC" nil
+         "C-;" 'help-command)
 
        ;; File keybindings
        (general-nvmap
@@ -156,26 +157,19 @@
 
        (gn/leader-nmap
          ":" 'execute-extended-command
-         "h" '(:ignore h :which-key "help")
-         "hh" 'help-for-help
-         "hb" 'describe-bindings
-         "hf" 'describe-function
-         "hk" 'describe-key
-         "hv" 'describe-variable
          "b" '(:ignore b :which-key "buffer")
          "bs" 'save-buffer
          "bq" 'kill-current-buffer
-         "w" '(:ignore w :which-key "window")
-         "wq" 'evil-window-delete
-         "wQ" 'delete-other-windows
-         "wh" 'evil-window-left
-         "wH" 'evil-window-move-far-left
-         "wl" 'evil-window-right
-         "wL" 'evil-window-move-far-right
-         "wk" 'evil-window-up
-         "wK" 'evil-window-move-very-top
-         "wj" 'evil-window-down
-         "wJ" 'evil-window-move-very-bottom
+         "q" 'evil-window-delete
+         "Q" 'delete-other-windows
+         "h" 'evil-window-left
+         "H" 'evil-window-move-far-left
+         "l" 'evil-window-right
+         "L" 'evil-window-move-far-right
+         "k" 'evil-window-up
+         "K" 'evil-window-move-very-top
+         "j" 'evil-window-down
+         "J" 'evil-window-move-very-bottom
          "m" '(:ignore m :which-key "modes")
          "mw" 'whitespace-mode)
 
@@ -275,13 +269,21 @@
         (gn/leader-nvmap org-mode-map
           "e" 'org-ctrl-c-ctrl-c)
 
+        (defun gn/org-insert-new-item ()
+          "test"
+          (interactive)
+          (unless (org-in-item-p)
+              (message "Tehhlo")))
+
+
         (general-nvmap org-mode-map
           ;; Movement
           "C-k" 'org-previous-visible-heading
           "C-j" 'org-next-visible-heading
 
           ;; Editing
-          "C-RET" 'org-ctrl-c-ret)
+          "C-RET" 'gn/test
+          )
 
         (general-imap org-mode-map
           ;; Editing
@@ -307,6 +309,7 @@
           [remap save-buffer] 'org-capture-finalize
           [remap kill-current-buffer] 'org-capture-kill)
 
+
         (gn/leader-nmap org-mode-map
           "s" '(:ignore s :which-key "src")
           "se" 'org-edit-special
@@ -321,6 +324,36 @@
 
         )
 
+      (defun gn/test-at-item ()
+        ""
+        (interactive)
+        (message (if (org-at-item-p)
+                    "true" "false")))
+
+      (defun gn/test-at-item ()
+        ""
+        (interactive)
+        (message (if (org-at-item-p)
+                     "true" "false")))
+
+      (defun gn/org-insert-new-item ()
+        "test"
+        (interactive)
+        (evil-append-line 0)
+        (cond ((org-at-item-checkbox-p) ((evil-end-of-line))
+              ((org-in-item-p) (org-insert-item))
+              ()
+          )))
+
+      (gn/org-insert-new-item)
+
+      (defun gn/test ()
+        "hello"
+        (setq a "adfa")
+        (message a))
+      (gn/test)
+      (cond ((eq 1 1) (message "Hello"))
+            (t (message "default")))
     #+end_src
 
 *** PlantUML
@@ -361,14 +394,15 @@
     
     
 
-
+    
 * Test
-
-* 
-
-* 
-
-** kkk
-
-** 
+  - test
+  - 
+  - sdfa
+  - dfja
+  - f
+  - [ ] t
+  - dfae
+  - [ ] s
+    - [ ] t
 
