@@ -268,24 +268,36 @@
 ** Packages
 *** Org Mode
 
-    #+begin_src emacs-lisp 
+    #+begin_src emacs-lisp :results none
       (use-package org
         :config
         ;; General org mode stuff
         (gn/leader-nvmap org-mode-map
           "e" 'org-ctrl-c-ctrl-c)
 
-        ;; Movement
         (general-nvmap org-mode-map
-          "K" 'org-previous-visible-heading
-          "J" 'org-next-visible-heading)
+          ;; Movement
+          "C-k" 'org-previous-visible-heading
+          "C-j" 'org-next-visible-heading
+
+          ;; Editing
+          "C-RET" 'org-ctrl-c-ret)
+
+        (general-imap org-mode-map
+          ;; Editing
+          "C-RET" 'org-ctrl-c-ret)
 
         ;; Capture
-        (defvar gn/org-capture-path "~/todo/inbox.org"
-          "The path to the .org file which org-capture places the entry")
+        (defvar gn/inbox-path "~/todo/inbox.org"
+          "Path to inbox org file")
+        (defvar gn/tasks-path "~/todo/tasks.org"
+          "Path to task org file")
         (setq org-capture-templates
-              '(("i" "Inbox" entry (file gn/org-capture-path)
-                 "* %?")))
+              '(("i" "Inbox" entry (file+headline gn/inbox-path "Inbox")
+                 "** %?")))
+        (setq org-refile-targets
+              '((gn/inbox-path :level . 1)
+                (gn/tasks-path :level . 1)))
         (gn/leader-nvmap 
           "o" '(:ignore o :which-key "org-mode")
           "oc" 'org-capture
@@ -293,7 +305,7 @@
 
         (general-nmap org-capture-mode-map
           [remap save-buffer] 'org-capture-finalize
-          [rempa kill-current-buffer] 'org-capture-kill)
+          [remap kill-current-buffer] 'org-capture-kill)
 
         (gn/leader-nmap org-mode-map
           "s" '(:ignore s :which-key "src")
@@ -307,18 +319,9 @@
           [remap save-buffer] 'org-edit-src-exit
           [remap kill-current-buffer] 'org-edit-src-abort)
 
-        (use-package ox
-          :config
-          (use-package ox-latex)
-          (use-package dvipng)
-          )
-
         )
 
     #+end_src
-
-    #+RESULTS:
-    : t
 
 *** PlantUML
     #+begin_src emacs-lisp :results none
@@ -337,6 +340,7 @@
     #+end_src
     
     
+
 *** Magit
     #+begin_src emacs-lisp :results none
       (use-package magit
@@ -356,3 +360,15 @@
      
     
     
+
+
+* Test
+
+* 
+
+* 
+
+** kkk
+
+** 
+
