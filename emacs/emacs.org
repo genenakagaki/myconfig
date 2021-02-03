@@ -63,7 +63,7 @@
 
 *** Keybindings
     #+begin_src emacs-lisp :results none
-      (use-package general
+    (use-package general
         :config
         (general-evil-setup))
     #+end_src
