@@ -1,5 +1,5 @@
 #+PROPERTY: header-args :tangle ~/.emacs.d/init.el
- 
+
 * My Emacs Config
 ** Initial Setup
    These have to be at the top of the init.el file
@@ -97,29 +97,51 @@
            "k" 'evil-previous-visual-line
 
            ;; Custom motion commands
+           "H" 'evil-first-non-blank
            "J" 'evil-scroll-down
            "K" 'evil-scroll-up
+           "L" 'evil-end-of-line
            )
 
          (general-nmap
            ;; Custom delete commands
            "d" (general-key-dispatch 'evil-delete
-                 "n" 'evil-join))
+                 "n" 'evil-join
+                 "j" (general-simulate-key ('evil-delete "gj"))
+                 "k" (general-simulate-key ('evil-delete "gk"))
+                 "H" (general-simulate-key ('evil-delete "^"))
+                 "J" (general-simulate-key ('evil-delete "C-d"))
+                 "K" (general-simulate-key ('evil-delete "C-u"))
+                 "L" (general-simulate-key ('evil-delete "$"))
+                 ))
          ;; `evil-delete' is not bound in `evil-visual-state-map' by default but
          ;; inherited from `evil-normal-state-map'
          ;; This keeps the default behavior in visual state
          (general-vmap "d" 'evil-delete)
 
-         (evil-set-initial-state 'messages-buffer-mode 'normal)
-         (evil-set-initial-state 'dashboard-mode 'normal))
+         (general-nmap
+           ;; Custom change commands
+           "c" (general-key-dispatch 'evil-change
+                 "n" 'evil-join
+                 "j" (general-simulate-key ('evil-change "gj"))
+                 "k" (general-simulate-key ('evil-change "gk"))
+                 "H" (general-simulate-key ('evil-change "^"))
+                 "J" (general-simulate-key ('evil-change "C-d"))
+                 "K" (general-simulate-key ('evil-change "C-u"))
+                 "L" (general-simulate-key ('evil-change "$"))
+                 ))
+         ;; `evil-change' is not bound in `evil-visual-state-map' by default but
+         ;; inherited from `evil-normal-state-map'
+         ;; This keeps the default behavior in visual state
+         (general-vmap "c" 'evil-change)
 
-       (use-package evil-collection
-         :after evil
-         :config
-         (evil-collection-init))
+          (evil-set-initial-state 'messages-buffer-mode 'normal)
+          (evil-set-initial-state 'dashboard-mode 'normal))
 
-
-
+         (use-package evil-collection
+           :after evil
+           :config
+           (evil-collection-init))
 
 
      #+end_src
@@ -179,7 +201,7 @@
        (gn/leader-vmap emacs-lisp-mode-map
          "e" 'eval-region)
      #+end_src
-
+     
 ** Screen
 **** UI
      #+begin_src emacs-lisp :results none
@@ -263,98 +285,163 @@
 *** Org Mode
 
     #+begin_src emacs-lisp :results none
-      (use-package org
-        :config
-        ;; General org mode stuff
-        (gn/leader-nvmap org-mode-map
-          "e" 'org-ctrl-c-ctrl-c)
+      (use-package org)
 
-        (defun gn/org-insert-new-item ()
-          "test"
-          (interactive)
-          (unless (org-in-item-p)
-              (message "Tehhlo")))
+      ;; General org mode stuff
+      (gn/leader-nvmap org-mode-map
+        "e" 'org-ctrl-c-ctrl-c)
 
-
-        (general-nvmap org-mode-map
-          ;; Movement
-          "C-k" 'org-previous-visible-heading
-          "C-j" 'org-next-visible-heading
-
-          ;; Editing
-          "C-RET" 'gn/test
-          )
-
-        (general-imap org-mode-map
-          ;; Editing
-          "C-RET" 'org-ctrl-c-ret)
-
-        ;; Capture
-        (defvar gn/inbox-path "~/todo/inbox.org"
-          "Path to inbox org file")
-        (defvar gn/tasks-path "~/todo/tasks.org"
-          "Path to task org file")
-        (setq org-capture-templates
-              '(("i" "Inbox" entry (file+headline gn/inbox-path "Inbox")
-                 "** %?")))
-        (setq org-refile-targets
-              '((gn/inbox-path :level . 1)
-                (gn/tasks-path :level . 1)))
-        (gn/leader-nvmap 
-          "o" '(:ignore o :which-key "org-mode")
-          "oc" 'org-capture
-          )
-
-        (general-nmap org-capture-mode-map
-          [remap save-buffer] 'org-capture-finalize
-          [remap kill-current-buffer] 'org-capture-kill)
-
-
-        (gn/leader-nmap org-mode-map
-          "s" '(:ignore s :which-key "src")
-          "se" 'org-edit-special
-          "st" 'org-babel-tangle
-          "i" '(:ignore i :which-key "insert")
-          "it" 'org-insert-structure-template
-          )
-
-        (general-nmap org-src-mode-map
-          [remap save-buffer] 'org-edit-src-exit
-          [remap kill-current-buffer] 'org-edit-src-abort)
-
+      (gn/leader-nmap org-mode-map
+        "i" '(:ignore i :which-key "insert")
+        "it" 'org-insert-structure-template
         )
 
-      (defun gn/test-at-item ()
-        ""
-        (interactive)
-        (message (if (org-at-item-p)
-                    "true" "false")))
+    #+end_src
+    
+**** Movement
+    #+begin_src emacs-lisp :results none
+      (define-minor-mode gn/org-movement-mode
+        "Minor mode for org movements"
+        :lighter " gn/org-movement"
+        )
 
-      (defun gn/test-at-item ()
-        ""
-        (interactive)
-        (message (if (org-at-item-p)
-                     "true" "false")))
-
+      ;(general-nvmap org-mode-map
+      ;  "C-k" 'org-previous-visible-heading
+      ;  "C-j" 'org-next-visible-heading
+      ;  )
+    #+end_src
+    
+**** Editing
+    #+begin_src emacs-lisp :results none
       (defun gn/org-insert-new-item ()
-        "test"
+        "Inserts a new item (headings, checkboxes, or bullets)"
         (interactive)
         (evil-append-line 0)
-        (cond ((org-at-item-checkbox-p) ((evil-end-of-line))
-              ((org-in-item-p) (org-insert-item))
-              ()
-          )))
+        (cond ((org-at-heading-p) (org-insert-heading-respect-content)) 
+              ((org-at-item-checkbox-p) (org-insert-todo-heading nil))
+              ((org-at-item-p) (org-insert-item))))
 
-      (gn/org-insert-new-item)
+      (defun gn/org-promote ()
+        "Moves item position (headings, checkboxes, or bullets)"
+        (interactive)
+        (cond ((org-at-heading-p) (org-do-promote))
+              ((org-at-item-p) (org-outdent-item))))
 
-      (defun gn/test ()
-        "hello"
-        (setq a "adfa")
-        (message a))
-      (gn/test)
-      (cond ((eq 1 1) (message "Hello"))
-            (t (message "default")))
+      (defun gn/org-promote-tree ()
+        "Moves item position (headings, checkboxes, or bullets)"
+        (interactive)
+        (cond ((org-at-heading-p) (org-promote-subtree))
+              ((org-at-item-p) (org-outdent-item-tree))))
+
+      (defun gn/org-demote ()
+        "Demotes item (headings, lists)"
+        (interactive)
+        (cond ((org-at-heading-p) (org-do-demote))
+              ((org-at-item-p) (org-indent-item))))
+
+      (defun gn/org-demote-tree ()
+        "Demotes item (headings, lists)"
+        (interactive)
+        (cond ((org-at-heading-p) (org-demote-subtree))
+              ((org-at-item-p) (org-indent-item-tree))))
+
+      (defun gn/org-demote-tree ()
+        "Demotes item (headings, lists)"
+        (interactive)
+        (cond ((org-at-heading-p) (org-demote-subtree))
+              ((org-at-item-p) (org-indent-item-tree))))
+
+      (defun gn/org-move-tree-up ()
+        "Moves item up (headings, lists)"
+        (interactive)
+        (cond ((org-at-heading-p) (org-move-subtree-up))
+              ((org-at-item-p) (org-move-item-up))))
+
+      (defun gn/org-move-tree-down ()
+        "Moves item down (headings, lists)"
+        (interactive)
+        (cond ((org-at-heading-p) (org-move-subtree-down))
+              ((org-at-item-p) (org-move-item-down))))
+
+      (general-define-key
+       :states '(normal visual insert)
+       :keymaps 'org-mode-map
+       "C-<return>" 'gn/org-insert-new-item
+       "C-h" 'gn/org-promote-tree
+       "C-H" 'gn/org-promote
+       "C-j" 'gn/org-move-tree-down
+       "C-k" 'gn/org-move-tree-up
+       "C-l" 'gn/org-demote-tree
+       "C-L" 'gn/org-demote
+       )
+
+      (defun gn/org-open-scope ()
+        "Open subtree or block in new buffer"
+        (interactive)
+        (cond ((org-in-src-block-p) (org-edit-special))
+              ((org-at-heading-p) (org-tree-to-indirect-buffer))))
+
+      (gn/leader-nvmap org-mode-map
+        "bb" 'gn/org-open-scope
+        )
     #+end_src
+
+**** Todo
+     #+begin_src emacs-lisp :results none
+       (setq org-todo-keywords
+             '((sequence "TODO" "|" "DONE")
+               (sequence "PENDING(p)" "|" "DELEGATED(d)" "CANCELLED(c)")))
+
+       (defun gn/toggle-todo ()
+         "Toggle TODO and DONE"
+         (interactive)
+         (org-todo
+          (if (org-entry-is-todo-p)
+              "DONE" "TODO"))
+         )
+
+       (gn/leader-nmap
+         "T" 'gn/toggle-todo
+         "t" '(:ignore t :which-key "toggle")
+         "tt" 'org-todo)
+     #+end_src
+
+**** Capture
+    #+begin_src emacs-lisp :results none
+      (defvar gn/inbox-path "~/todo/inbox.org"
+        "Path to inbox org file")
+      (defvar gn/tasks-path "~/todo/tasks.org"
+        "Path to task org file")
+
+      (setq org-capture-templates
+            '(("i" "Inbox" entry (file+headline gn/inbox-path "Inbox")
+               "** %?")))
+
+      (setq org-refile-targets
+            '((gn/inbox-path :level . 1)
+              (gn/tasks-path :level . 1)))
+
+      (gn/leader-nvmap 
+        "o" '(:ignore o :which-key "org-mode")
+        "oc" 'org-capture
+        )
+
+      (general-nmap org-capture-mode-map
+        [remap save-buffer] 'org-capture-finalize
+        [remap kill-current-buffer] 'org-capture-kill)
+    #+end_src
+**** Source Mode
+    #+begin_src emacs-lisp :results none
+      (general-nmap org-src-mode-map
+        [remap save-buffer] 'org-edit-src-exit
+        [remap kill-current-buffer] 'org-edit-src-abort)
+
+      (gn/leader-nmap org-mode-map
+        "s" '(:ignore s :which-key "src")
+        "st" 'org-babel-tangle
+        )
+    #+end_src
+
 
 *** PlantUML
     #+begin_src emacs-lisp :results none
@@ -395,14 +482,4 @@
     
 
     
-* Test
-  - test
-  - 
-  - sdfa
-  - dfja
-  - f
-  - [ ] t
-  - dfae
-  - [ ] s
-    - [ ] t
-
+    
