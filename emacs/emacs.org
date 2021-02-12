@@ -23,11 +23,13 @@
       (require 'use-package)
       (setq use-package-always-ensure t)
       (setq use-package-always-demand t)
-    #+end_src
 
+      (use-package dash)
+    #+end_src
+    
 *** Files
     #+begin_src emacs-lisp :results none
-
+    
       ;; Keep .emacs.d directory clean
       (setq no-littering-etc-directory
             (expand-file-name "config/" user-emacs-directory))
@@ -218,7 +220,7 @@
          :config
          (setq doom-themes-enable-bold t
                doom-themes-enable-italic t)
-         (load-theme 'doom-dark+ t)
+         (load-theme 'doom-one t)
          (doom-themes-org-config))
 
        (use-package rainbow-delimiters
@@ -289,7 +291,9 @@
 
       ;; General org mode stuff
       (gn/leader-nvmap org-mode-map
-        "e" 'org-ctrl-c-ctrl-c)
+        "e" 'org-ctrl-c-ctrl-c
+        "o" '(:ignore o :which-key "org-mode")
+        )
 
       (gn/leader-nmap org-mode-map
         "i" '(:ignore i :which-key "insert")
@@ -389,21 +393,43 @@
 **** Todo
      #+begin_src emacs-lisp :results none
        (setq org-todo-keywords
-             '((sequence "TODO" "|" "DONE")
+             '((sequence "TODO" "DOING" "|" "DONE")
                (sequence "PENDING(p)" "|" "DELEGATED(d)" "CANCELLED(c)")))
+
+       (defun gn/org-next-todo (todo)
+         "Returns next todo"
+         (cond ((equal todo "TODO") "DOING")
+               ((equal todo "PENDING") "DOING")
+               ((equal todo "DOING") "DONE")))
 
        (defun gn/toggle-todo ()
          "Toggle TODO and DONE"
          (interactive)
-         (org-todo
-          (if (org-entry-is-todo-p)
-              "DONE" "TODO"))
+         (-> (if (org-entry-is-todo-p)
+                 (-> (org-get-todo-state)
+                     substring-no-properties
+                     gn/org-next-todo)
+               "TODO")
+             org-todo)
          )
+
 
        (gn/leader-nmap
          "T" 'gn/toggle-todo
          "t" '(:ignore t :which-key "toggle")
          "tt" 'org-todo)
+
+
+     #+end_src
+**** Agenda
+     #+begin_src emacs-lisp :results none
+       (evil-set-initial-state 'org-agenda-mode 'normal)
+
+       (setq org-agenda-files '("~/todo/tasks.org"))
+
+       (gn/leader-nmap
+         "oa" 'org-agenda
+        )
      #+end_src
 
 **** Capture
@@ -422,7 +448,6 @@
               (gn/tasks-path :level . 1)))
 
       (gn/leader-nvmap 
-        "o" '(:ignore o :which-key "org-mode")
         "oc" 'org-capture
         )
 
@@ -458,6 +483,12 @@
          "e" 'plantuml-preview-buffer)
         )
     #+end_src
+    
+#+begin_src plantuml
+start
+:hello;
+stop
+#+end_src
     
     
 
