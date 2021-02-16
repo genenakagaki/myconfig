@@ -461,13 +461,16 @@
         [remap save-buffer] 'org-edit-src-exit
         [remap kill-current-buffer] 'org-edit-src-abort)
 
+      ;; Don't confirm when evaluating src blocks
+      (setq org-confirm-babel-evaluate nil)
+
       (gn/leader-nmap org-mode-map
         "s" '(:ignore s :which-key "src")
         "st" 'org-babel-tangle
         )
     #+end_src
 
-
+    
 *** PlantUML
     #+begin_src emacs-lisp :results none
       (use-package plantuml-mode
@@ -475,22 +478,18 @@
         (setq plantuml-jar-path "~/config/emacs/plantuml.jar")
         (setq plantuml-default-exec-mode 'jar)
         (setq plantuml-output-type "svg")
+        (setq org-plantuml-jar-path (expand-file-name "~/config/emacs/plantuml.jar"))
         ;; Make plantuml available in org mode 
         (add-to-list
          'org-src-lang-modes '("plantuml" . plantuml))
+
+        ;; Need this to evaluate plantuml src block
+        (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
 
         (gn/leader-nvmap 'plantuml-mode-map
          "e" 'plantuml-preview-buffer)
         )
     #+end_src
-    
-#+begin_src plantuml
-start
-:hello;
-stop
-#+end_src
-    
-    
 
 *** Magit
     #+begin_src emacs-lisp :results none
