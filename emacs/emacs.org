@@ -470,25 +470,31 @@
         )
     #+end_src
 
-    
 *** PlantUML
     #+begin_src emacs-lisp :results none
-      (use-package plantuml-mode
-        :config
-        (setq plantuml-jar-path "~/config/emacs/plantuml.jar")
-        (setq plantuml-default-exec-mode 'jar)
-        (setq plantuml-output-type "svg")
-        (setq org-plantuml-jar-path (expand-file-name "~/config/emacs/plantuml.jar"))
-        ;; Make plantuml available in org mode 
-        (add-to-list
-         'org-src-lang-modes '("plantuml" . plantuml))
+      (use-package plantuml-mode)
 
-        ;; Need this to evaluate plantuml src block
-        (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
+      (setq plantuml-jar-path "~/config/emacs/plantuml.jar")
+      (setq plantuml-default-exec-mode 'jar)
+      (setq plantuml-output-type "svg")
+      (setq org-plantuml-jar-path (expand-file-name "~/config/emacs/plantuml.jar"))
+      ;; Make plantuml available in org mode 
+      (add-to-list
+       'org-src-lang-modes '("plantuml" . plantuml))
 
-        (gn/leader-nvmap 'plantuml-mode-map
-         "e" 'plantuml-preview-buffer)
-        )
+      ;; Need this to evaluate plantuml src block
+      (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
+
+      (defun gn/preview-plantuml ()
+        "Preview plantuml diagram"
+        (interactive)
+        (let ((preview-window (get-buffer-window plantuml-preview-buffer)))
+          (when preview-window
+            (quit-window nil preview-window)))
+        (plantuml-preview 1))
+
+      (gn/leader-nvmap 'plantuml-mode-map
+       "e" 'gn/preview-plantuml)
     #+end_src
 
 *** Magit
