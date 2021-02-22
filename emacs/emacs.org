@@ -290,14 +290,21 @@
       (use-package org)
 
       ;; General org mode stuff
+      (gn/leader-nvmap
+        "o" '(:ignore o :which-key "org-mode"))
       (gn/leader-nvmap org-mode-map
         "e" 'org-ctrl-c-ctrl-c
-        "o" '(:ignore o :which-key "org-mode")
         )
+
 
       (gn/leader-nmap org-mode-map
         "i" '(:ignore i :which-key "insert")
         "it" 'org-insert-structure-template
+        "id" '(:ignore id :which-key "date")
+        "idd" 'org-time-stamp
+        "idi" 'org-time-stamp-inactive
+        "idD" 'org-deadline
+        "ids" 'org-schedule
         )
 
     #+end_src
@@ -389,7 +396,7 @@
         "bb" 'gn/org-open-scope
         )
     #+end_src
-
+    
 **** Todo
      #+begin_src emacs-lisp :results none
        (setq org-todo-keywords
@@ -469,7 +476,17 @@
         "st" 'org-babel-tangle
         )
     #+end_src
+**** Template
+     #+begin_src emacs-lisp :results none
+       (use-package org-tempo)
 
+       (defun gn/a ()
+         ""
+         (org-heading-components))
+
+       (gn/a)
+     #+end_src
+     
 *** PlantUML
     #+begin_src emacs-lisp :results none
       (use-package plantuml-mode)
