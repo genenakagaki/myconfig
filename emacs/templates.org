@@ -1,2 +1,6 @@
-* Hello
-** Hellooooo
+outer body 
+* First heading 
+  first body
+  
+** Second heading
+   second body
