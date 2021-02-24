@@ -299,7 +299,6 @@
 
       (gn/leader-nmap org-mode-map
         "i" '(:ignore i :which-key "insert")
-        "it" 'org-insert-structure-template
         "id" '(:ignore id :which-key "date")
         "idd" 'org-time-stamp
         "idi" 'org-time-stamp-inactive
@@ -482,34 +481,51 @@
 
        (defvar gn/test)
 
-       (defun gn/org-get-template ()
+       (defun gn/org-template ()
          ""
-         (setq gn/test (with-temp-buffer
+         (with-temp-buffer
            (insert-file-contents gn/org-template-path)
            (org-mode)
-           (org-element-parse-buffer))))
+           (org-element-parse-buffer)))
 
+       (defun gn/org-template-headlines (max-headline-level)
+         "Get org template headlines
 
-       (setq eval-expression-print-length nil)
-       (setq eval-expression-print-level 3)
-       (gn/org-get-template)
-       (print gn/test)
-       (->> (nth 2 gn/test)
-            (nth 1)
-            ((lambda (map) (lookup-key map "end")))
-            ;(lookup-key )
+       MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
+         (org-element-map (gn/org-template) 'headline
+           (lambda (h)
+             (when (<= (org-element-property :level h)
+                       max-headline-level)
+               h))))
+
+       (defvar gn/org-max-headline-level 1)
+
+       (defun gn/org-insert-template ()
+         (interactive)
+         (let ((headlines (gn/org-template-headlines gn/org-max-headline-level)))
+           (->> headlines
+                (-map (lambda
+                        (headline)
+                        (org-element-property :raw-value headline)))
+                (completing-read "Select a template: ")
+                ((lambda (headline-raw-value)
+                   (-first (lambda
+                             (headline)
+                             (string= headline-raw-value
+                                      (org-element-property :raw-value headline)))
+                           headlines)))
+                (org-element-interpret-data)
+                ((lambda (headline)
+                   (save-excursion (insert headline)))))
            )
+         )
 
-       (print (gn/org-get-template))
-       (setq a (org-element-interpret-data (gn/org-get-template)))
-       '(a)
-
-       (defun gn/b () ""
-              (interactive)
-              (save-excursion
-                (insert (org-element-interpret-data (gn/org-get-template)))))
-
+       (gn/leader-nmap org-mode-map
+         "it" 'org-insert-structure-template
+         "iT" 'gn/org-insert-template)
      #+end_src
+
+
      
 *** PlantUML
     #+begin_src emacs-lisp :results none
@@ -562,5 +578,3 @@
     
 
 
-* Hello
-** Hellooooo
