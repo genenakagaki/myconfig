@@ -4,6 +4,9 @@
 ** Initial Setup
    These have to be at the top of the init.el file
 *** Packages
+    :PROPERTIES:
+    :ID:       9A30ED8D-3ECA-4502-A479-B1EE717FF5E9
+    :END:
     #+begin_src emacs-lisp :results none
       ;; Setup package
       (require 'package)
@@ -29,7 +32,7 @@
     
 *** Files
     #+begin_src emacs-lisp :results none
-    
+
       ;; Keep .emacs.d directory clean
       (setq no-littering-etc-directory
             (expand-file-name "config/" user-emacs-directory))
@@ -42,6 +45,8 @@
               `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
         (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
         (load custom-file t))
+
+      (set-language-environment "Japanese")
 
       ;; Use UTF-8
       (prefer-coding-system 'utf-8)
@@ -64,6 +69,9 @@
     #+end_src
 
 *** Keybindings
+    :PROPERTIES:
+    :ID:       0EC420B9-8484-4260-A799-8AB59834430B
+    :END:
     #+begin_src emacs-lisp :results none
     (use-package general
         :config
@@ -72,6 +80,9 @@
     
 ** Keybindings
 **** Vim
+     :PROPERTIES:
+     :ID:       EC237C5C-7B84-4A23-8DA5-2205A48C07B1
+     :END:
      #+begin_src emacs-lisp :results none
        ;; Vim keybindings
        (use-package evil
@@ -88,7 +99,6 @@
 
          (general-nvmap
            "SPC" nil
-           "RET" nil
            "TAB" nil
            "C-o" nil ; Open files
            "C-O" nil ; Open new files
@@ -149,18 +159,20 @@
      #+end_src
 
 **** Keybindings
+     :PROPERTIES:
+     :ID:       C6863F6B-F715-43F2-BD5C-55A2770F61E9
+     :END:
      #+begin_src emacs-lisp :results none
        (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
        (general-def
-         "C-SPC" nil
-         "C-;" 'help-command)
+         "C-SPC" 'help-command)
 
        ;; File keybindings
        (general-nvmap
          "C-a" 'mark-whole-buffer
          "C-o" 'find-file-other-window
-         ;"C-w" 'kill-current-buffer
+                                               ;"C-w" 'kill-current-buffer
          )
 
        ;; leader keys
@@ -178,6 +190,7 @@
          :states 'visual
          :prefix "SPC"
          :keymaps 'override)
+
 
        (gn/leader-nmap
          ":" 'execute-extended-command
@@ -206,6 +219,9 @@
      
 ** Screen
 **** UI
+     :PROPERTIES:
+     :ID:       117371D1-DED6-41C4-938E-2E3985AC407A
+     :END:
      #+begin_src emacs-lisp :results none
        (setq inhibit-startup-message t) ; Prevent launch message
        (menu-bar-mode -1) ; Disable the menu bar
@@ -214,6 +230,9 @@
 
      #+end_src
 **** Style
+     :PROPERTIES:
+     :ID:       D0FF8DCF-8D4F-423C-A3AA-9C97C45657F3
+     :END:
      #+begin_src emacs-lisp :results none
        ;; Theme
        (use-package doom-themes
@@ -239,6 +258,9 @@
      #+end_src
 
 ** Autocomplete
+   :PROPERTIES:
+   :ID:       CA40FCBA-70F5-42AA-B73A-CA36C9CD52DA
+   :END:
    Setup completion tool
    #+begin_src emacs-lisp
      (use-package ivy
@@ -270,6 +292,9 @@
    #+end_src
 
 ** Editor 
+   :PROPERTIES:
+   :ID:       96405D7A-836D-4724-A465-9B0CA6893305
+   :END:
    Prevent tabs when indenting
    #+begin_src emacs-lisp
      (setq-default indent-tabs-mode nil)
@@ -285,30 +310,24 @@
 
 ** Packages
 *** Org Mode
-
+    :PROPERTIES:
+    :ID:       80F98E85-2239-425A-8631-40808D0D8830
+    :END:
+    
     #+begin_src emacs-lisp :results none
       (use-package org)
+
+      (setq org-return-follows-link t)
 
       ;; General org mode stuff
       (gn/leader-nvmap
         "o" '(:ignore o :which-key "org-mode"))
-      (gn/leader-nvmap org-mode-map
-        "e" 'org-ctrl-c-ctrl-c
-        )
-
-
-      (gn/leader-nmap org-mode-map
-        "i" '(:ignore i :which-key "insert")
-        "id" '(:ignore id :which-key "date")
-        "idd" 'org-time-stamp
-        "idi" 'org-time-stamp-inactive
-        "idD" 'org-deadline
-        "ids" 'org-schedule
-        )
-
     #+end_src
     
 **** Movement
+     :PROPERTIES:
+     :ID:       35FB9957-2A45-42AD-B6B6-106B8340ECC1
+     :END:
     #+begin_src emacs-lisp :results none
       (define-minor-mode gn/org-movement-mode
         "Minor mode for org movements"
@@ -322,6 +341,9 @@
     #+end_src
     
 **** Editing
+     :PROPERTIES:
+     :ID:       3C4AA5CA-0BAB-44B2-AC10-6E535557771A
+     :END:
     #+begin_src emacs-lisp :results none
       (defun gn/org-insert-new-item ()
         "Inserts a new item (headings, checkboxes, or bullets)"
@@ -373,30 +395,18 @@
         (cond ((org-at-heading-p) (org-move-subtree-down))
               ((org-at-item-p) (org-move-item-down))))
 
-      (general-define-key
-       :states '(normal visual insert)
-       :keymaps 'org-mode-map
-       "C-<return>" 'gn/org-insert-new-item
-       "C-h" 'gn/org-promote-tree
-       "C-H" 'gn/org-promote
-       "C-j" 'gn/org-move-tree-down
-       "C-k" 'gn/org-move-tree-up
-       "C-l" 'gn/org-demote-tree
-       "C-L" 'gn/org-demote
-       )
-
       (defun gn/org-open-scope ()
         "Open subtree or block in new buffer"
         (interactive)
         (cond ((org-in-src-block-p) (org-edit-special))
               ((org-at-heading-p) (org-tree-to-indirect-buffer))))
 
-      (gn/leader-nvmap org-mode-map
-        "bb" 'gn/org-open-scope
-        )
     #+end_src
     
 **** Todo
+     :PROPERTIES:
+     :ID:       DF992C91-0DC4-4A73-B2E6-D94C5E554802
+     :END:
      #+begin_src emacs-lisp :results none
        (setq org-todo-keywords
              '((sequence "TODO" "DOING" "|" "DONE")
@@ -418,20 +428,18 @@
                "TODO")
              org-todo)
          )
-
-
-       (gn/leader-nmap
-         "T" 'gn/toggle-todo
-         "t" '(:ignore t :which-key "toggle")
-         "tt" 'org-todo)
-
-
      #+end_src
 **** Agenda
+     :PROPERTIES:
+     :ID:       4FD603F4-7305-45A9-9BB1-EA39CF70735A
+     :END:
      #+begin_src emacs-lisp :results none
        (evil-set-initial-state 'org-agenda-mode 'normal)
 
-       (setq org-agenda-files '("~/todo/tasks.org"))
+       (setq org-agenda-files '("~/todo/next-actions.org"
+                                "~/todo/projects.org"
+                                "~/todo/waiting.org"
+                                "~/todo/scheduled.org"))
 
        (gn/leader-nmap
          "oa" 'org-agenda
@@ -439,11 +447,12 @@
      #+end_src
 
 **** Capture
+     :PROPERTIES:
+     :ID:       87822AB9-D6D1-423E-9992-703CA35D471F
+     :END:
     #+begin_src emacs-lisp :results none
       (defvar gn/inbox-path "~/todo/inbox.org"
         "Path to inbox org file")
-      (defvar gn/tasks-path "~/todo/tasks.org"
-        "Path to task org file")
 
       (setq org-capture-templates
             '(("i" "Inbox" entry (file+headline gn/inbox-path "Inbox")
@@ -451,7 +460,13 @@
 
       (setq org-refile-targets
             '((gn/inbox-path :level . 1)
-              (gn/tasks-path :level . 1)))
+              ("~/todo/next-actions.org" :level . 1)
+              ("~/todo/projects.org" :level . 1)
+              ("~/todo/waiting.org" :level . 1)
+              ("~/todo/scheduled.org" :level . 1)
+              ("~/todo/incubator.org" :level . 1)
+              ("~/todo/references.org" :level . 1)
+              ))
 
       (gn/leader-nvmap 
         "oc" 'org-capture
@@ -462,6 +477,9 @@
         [remap kill-current-buffer] 'org-capture-kill)
     #+end_src
 **** Source Mode
+     :PROPERTIES:
+     :ID:       E8439491-DD2C-414E-893E-81CA9B76B7C8
+     :END:
     #+begin_src emacs-lisp :results none
       (general-nmap org-src-mode-map
         [remap save-buffer] 'org-edit-src-exit
@@ -470,16 +488,13 @@
       ;; Don't confirm when evaluating src blocks
       (setq org-confirm-babel-evaluate nil)
 
-      (gn/leader-nmap org-mode-map
-        "s" '(:ignore s :which-key "src")
-        "st" 'org-babel-tangle
-        )
     #+end_src
 **** Template
+     :PROPERTIES:
+     :ID:       0D37799C-854A-4429-A963-11B39F6D3EAF
+     :END:
      #+begin_src emacs-lisp :results none
        (defvar gn/org-template-path "~/config/emacs/templates.org")
-
-       (defvar gn/test)
 
        (defun gn/org-template ()
          ""
@@ -498,7 +513,7 @@
                        max-headline-level)
                h))))
 
-       (defvar gn/org-max-headline-level 1)
+       (defvar gn/org-max-headline-level 2)
 
        (defun gn/org-insert-template ()
          (interactive)
@@ -519,21 +534,67 @@
                    (save-excursion (insert headline)))))
            )
          )
+     #+end_src
+**** Getting Things Done
+     :PROPERTIES:
+     :ID:       8BCAEE75-6EFC-4702-A2F9-20ADC62E9CBB
+     :END:
+     #+begin_src emacs-lisp :results none
+     #+end_src
+     
+**** Keybindings
+     :PROPERTIES:
+     :ID:       0E09937D-DA0C-4617-B561-5A2521D0AA09
+     :END:
+     #+begin_src emacs-lisp :results none
+       (gn/leader-nvmap org-mode-map
+         "e" 'org-ctrl-c-ctrl-c
+         "bb" 'gn/org-open-scope
+         )
 
        (gn/leader-nmap org-mode-map
+         "d" '(:ignore d :which-key "date")
+         "D" 'org-time-stamp
+         "di" 'org-time-stamp-inactive
+         "dd" 'org-deadline
+         "ds" 'org-schedule
+         "i" '(:ignore i :which-key "insert")
+         "il" 'org-insert-link
+         "ii" 'org-id-get-create
          "it" 'org-insert-structure-template
-         "iT" 'gn/org-insert-template)
+         "iT" 'gn/org-insert-template
+         "y" '(:ignore y :which-key "yank")
+         "yi" 'org-id-copy
+         "yl" 'org-store-link
+         "t" '(:ignore t :which-key "toggle")
+         "T" 'gn/toggle-todo
+         "tt" 'org-todo
+         "tl" 'org-toggle-link-display
+         "ti" 'org-toggle-inline-images
+         "s" '(:ignore s :which-key "src")
+         "st" 'org-babel-tangle
+         )
+
+       (general-define-key
+        :states '(normal visual insert)
+        :keymaps 'org-mode-map
+        "C-<return>" 'gn/org-insert-new-item
+        "C-h" 'gn/org-promote-tree
+        "C-S-h" 'gn/org-promote
+        "C-j" 'gn/org-move-tree-down
+        "C-k" 'gn/org-move-tree-up
+        "C-l" 'gn/org-demote-tree
+        "C-S-l" 'gn/org-demote
+        )
+
      #+end_src
-
-
-     
 *** PlantUML
     #+begin_src emacs-lisp :results none
       (use-package plantuml-mode)
 
       (setq plantuml-jar-path "~/config/emacs/plantuml.jar")
       (setq plantuml-default-exec-mode 'jar)
-      (setq plantuml-output-type "svg")
+      (setq plantuml-output-type "png")
       (setq org-plantuml-jar-path (expand-file-name "~/config/emacs/plantuml.jar"))
       ;; Make plantuml available in org mode 
       (add-to-list
@@ -555,6 +616,9 @@
     #+end_src
 
 *** Magit
+    :PROPERTIES:
+    :ID:       26383A59-ADC7-4DBD-8BE3-934AB23621FA
+    :END:
     #+begin_src emacs-lisp :results none
       (use-package magit
         :config
@@ -578,3 +642,4 @@
     
 
 
+    
