@@ -1,4 +1,22 @@
-** Feature Released
-*** Merge Request coding: 
-*** Merge Request review: 
-**** Release
+** Issue Feature Released
+*** Next action
+
+**** Create issue
+*** Finished actions
+
+*** Actions
+
+**** Create merge request
+
+**** coding
+
+**** code review
+
+**** release
+
+
+** Project
+*** Next action
+*** Finished actions
+
+*** Actions
