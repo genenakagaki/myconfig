@@ -415,7 +415,10 @@
 
       (setq org-capture-templates
             '(("i" "Inbox" entry (file+headline gn/inbox-path "Inbox")
-               "** %?")))
+               "** %?")
+              ("a" "Actions" entry (file "~/todo/actions.org")
+               "** %?")
+              ))
 
       (setq org-refile-targets
             '((gn/inbox-path :level . 1)
