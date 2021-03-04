@@ -374,7 +374,7 @@
      #+begin_src emacs-lisp :results none
        (setq org-todo-keywords
              '((sequence "TODO" "DOING(!)" "|" "DONE(!)")
-               (sequence "ON-HOLD(h!)" "SCHEDULED(s)" "WAITING(w!)" "CANCELLED(c!)")))
+               (sequence "ON-HOLD(o!)" "SCHEDULED(s)" "WAITING(w!)" "CANCELLED(c!)")))
 
        (setq org-log-into-drawer "LOGBOOK")
 
@@ -402,6 +402,7 @@
        (evil-set-initial-state 'org-agenda-mode 'normal)
 
        (setq org-agenda-files '("~/todo/actions.org"))
+       (setq org-agenda-log-mode-items '(state))
 
        (gn/leader-nmap
          "oa" 'org-agenda
@@ -416,16 +417,17 @@
       (setq org-capture-templates
             '(("i" "Inbox" entry (file+headline gn/inbox-path "Inbox")
                "** %?")
-              ("a" "Actions" entry (file "~/todo/actions.org")
+              ("w" "Work Actions" entry (file+headline "~/todo/actions.org" "Work")
+               "** %?")
+              ("h" "Home Actions" entry (file+headline "~/todo/actions.org" "Home")
+               "** %?")
+              ("t" "When I have time Actions" entry (file+headline "~/todo/actions.org" "When I have time")
                "** %?")
               ))
 
       (setq org-refile-targets
             '((gn/inbox-path :level . 1)
-              ("~/todo/next-actions.org" :level . 1)
-              ("~/todo/projects.org" :level . 1)
-              ("~/todo/waiting.org" :level . 1)
-              ("~/todo/scheduled.org" :level . 1)
+              ("~/todo/actions.org" :level . 1)
               ("~/todo/incubator.org" :level . 1)
               ("~/todo/references.org" :level . 1)
               ))
@@ -450,7 +452,7 @@
     #+end_src
 **** Template
      #+begin_src emacs-lisp :results none
-       (defvar gn/org-template-path "~/config/emacs/templates.org")
+       (defvar gn/org-template-path "~/todo/templates.org")
 
        (defun gn/org-template ()
          ""
@@ -591,6 +593,7 @@
     
 
 
+    
     
     
     
