@@ -423,6 +423,8 @@
                "** %?")
               ("t" "When I have time Actions" entry (file+headline "~/todo/actions.org" "When I have time")
                "** %?")
+              ("r" "Responding" entry (file+headline "~/todo/actions.org" "Work")
+               "** TODO Responding: \nHelping\nAnswering to question %?")
               ))
 
       (setq org-refile-targets
