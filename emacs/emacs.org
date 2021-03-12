@@ -571,6 +571,15 @@
        "e" 'gn/preview-plantuml)
     #+end_src
 
+*** Pomodoro
+    :LOGBOOK:
+    CLOCK: [2021-03-12 Fri 15:51]--[2021-03-12 Fri 15:55] =>  0:04
+    :END:
+    #+begin_src emacs-lisp :results none
+      (use-package org-pomodoro)
+    #+end_src
+
+
 *** Magit
     #+begin_src emacs-lisp :results none
       (use-package magit
