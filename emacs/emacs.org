@@ -663,3 +663,11 @@
     
     
     
+** Development
+   
+*** HTML/CSS
+    #+begin_src emacs-lisp :results none
+      (use-package web-mode)
+      (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+    #+end_src
+
