@@ -292,6 +292,11 @@
 
       (setq org-return-follows-link t)
 
+      (add-hook 'org-mode-hook (lambda ()
+                                 ;; make the lines in the buffer wrap around the edges of the screen.
+                                 (visual-line-mode)
+                                 (org-indent-mode)))
+
       ;; General org mode stuff
       (gn/leader-nvmap
         "o" '(:ignore o :which-key "org-mode"))
