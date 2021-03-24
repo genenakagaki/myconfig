@@ -676,5 +676,11 @@
       (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
       (setq-default indent-tabs-mode nil)
       (setq web-mode-markup-indent-offset 2)
+
+      (use-package vue-mode)
+      (setq mmm-js-mode-enter-hook (lambda () (setq syntax-ppss-table nil)))
+      (setq mmm-typescript-mode-enter-hook (lambda () (setq syntax-ppss-table nil)))
     #+end_src
 
+    
+    
