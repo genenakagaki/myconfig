@@ -553,54 +553,89 @@
     #+begin_src emacs-lisp :results none
       (require 'ox-html)
 
-      (org-export-define-derived-backend 'gn-blog-post-html 'html
+      (org-export-define-derived-backend 'gn-blog-post-vue 'html
         :translate-alist '((template . gn/org-blog-post-template)))
 
-      (defun gn/org-blog-post-template (contents info)
-        "Template for org html export"
-        (concat
-         "<!DOCTYPE html>\n"
-         (format "<html lang=\"%s\">\n" (plist-get info :language))
-         "<head>\n"
-         (format "<meta charset=\"%s\">\n"
-                 (coding-system-get org-html-coding-system 'mime-charset))
-         (format "<title>%s</title>\n"
-                 (org-export-data (or (plist-get info :title) "") info))
-         (format "<meta name=\"author\" content=\"%s\">\n"
-                 (org-export-data (plist-get info :author) info))
-         "<link href=\"/css/style.css\" rel=\"stylesheet\" style=\"text/css\" />\n"
-         "</head>\n"
-         "<body>\n"
-         (format "<h1 class=\"title\">%s</h1>\n"
-                 (org-export-data (or (plist-get info :title) "") info))
-         (format "<p>%s</p>" info)
+      ;(org-publish-project "gn-publish" t)
 
-         contents
-         "</body>\n"
-         "</html>\n"
+
+      ;'(setq gn/test )
+      ;'"./\\(?=.+?.\\(png\\|jpg\\)\\)" 
+      ;'(replace-regexp-in-string "./\\(?=.+?png\\)" "something" "<img src='./tessting.png'")
+
+      (defun gn/org-blog-post-template (contents info)
+        "Template for org vue export"
+        (concat
+         "<template>\n"
+         "<div>\n"
+         (format "%s" info)
+         "</div>\n"
+         "</template>\n"
+         "<script>\n"
+         "export default {\n"
+         (format "title: '%s',\n"
+                 (org-export-data (plist-get info :title) info))
+                 "meta: [\n"
+         (format "{name: 'description', content: '%s'},"
+                 (org-export-data (plist-get info :description) info))
+         "],\n"
+         "}\n"
+         "</script>\n"
          ))
 
-      (defun gn/org-html-publish-as-blog-post
+      (defun gn/org-publish-as-blog-post
           (&optional async subtreep visible-only body-only ext-plist)
         (interactive)
-        (org-export-to-buffer 'gn-blog-post-html "*Org HTML Export*"
+        (org-export-to-buffer 'gn-blog-post-vue "*Org HTML Export*"
           async subtreep visible-only body-only ext-plist
           (lambda () (set-auto-mode t))))
 
-      (defun gn/org-html-publish-to-blog-post
+      (defun gn/org-publish-blog-post-interactive
           (&optional async subtreep visible-only body-only ext-plist)
         (interactive)
-        (let* ((extension (concat "." (or (plist-get ext-plist :html-extension)
-                                          org-html-extension
-                                          "html")))
+        (unless (file-directory-p pub-dir)
+          (make-directory pub-dir t))
+        (let* ((extension ".vue")
                (file (org-export-output-file-name extension subtreep))
                (org-export-coding-system org-html-coding-system))
-          (org-export-to-file 'gn-blog-post-html file
+          (org-export-to-file 'gn-blog-post-vue file
             async subtreep visible-only body-only ext-plist)))
 
-      (provide 'gn-blog-post-html)
+      (defun gn/org-publish-blog-post (plist filename pub-dir)
+        (unless (file-directory-p pub-dir)
+          (make-directory pub-dir t))
+        (org-publish-org-to 'gn-blog-post-vue
+                            filename
+                            ".vue"
+                            plist
+                            pub-dir))
+
+      (provide 'gn-blog-post-vue)
 
     #+end_src
+*** Org HTML publishing
+#+begin_src emacs-lisp :results none
+  (setq org-publish-project-alist
+        '(
+          ("gn-publish" :components ("gn-publish-org" "gn-publish-static"))
+          ("gn-publish-org"
+           :base-directory "~/things/blog-posts/"
+           :base-extension "org"
+           :publishing-directory "~/things/web/pages/"
+           :recursive t
+           :publishing-function gn/org-publish-blog-post
+           :headline-levels 4
+           :auto-preamble t
+           )
+          ("gn-publish-static"
+           :base-directory "~/things/blog-posts/"
+           :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf"
+           :publishing-directory "~/things/web/static/"
+           :recursive t
+           :publishing-function org-publish-attachment
+           )
+          ))
+#+end_src
 
 *** PlantUML
     #+begin_src emacs-lisp :results none
@@ -682,5 +717,6 @@
       (setq mmm-typescript-mode-enter-hook (lambda () (setq syntax-ppss-table nil)))
     #+end_src
 
+    
     
     
