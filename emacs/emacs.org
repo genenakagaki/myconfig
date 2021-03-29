@@ -2,9 +2,9 @@
 
 * My Emacs Config
 ** Initial Setup
-   These have to be at the top of the init.el file
+These have to be at the top of the init.el file
 *** Packages
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
       ;; Setup package
       (require 'package)
 
@@ -25,10 +25,10 @@
       (setq use-package-always-demand t)
 
       (use-package dash)
-    #+end_src
+#+end_src
     
 *** Files
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
 
       ;; Keep .emacs.d directory clean
       (setq no-littering-etc-directory
@@ -63,18 +63,18 @@
       (use-package undo-tree
         :config
         (global-undo-tree-mode))
-    #+end_src
+#+end_src
 
 *** Keybindings
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
     (use-package general
         :config
         (general-evil-setup))
-    #+end_src
+#+end_src
     
 ** Keybindings
 **** Vim
-     #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
        ;; Vim keybindings
        (use-package evil
          :init
@@ -147,75 +147,78 @@
            (evil-collection-init))
 
 
-     #+end_src
+#+end_src
 
 **** Keybindings
-     #+begin_src emacs-lisp :results none
-       (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+#+begin_src emacs-lisp :results none
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-       (general-def
-         "C-SPC" 'help-command)
+  (general-def
+    "C-SPC" 'help-command)
 
-       ;; File keybindings
-       (general-nvmap
-         "C-a" 'mark-whole-buffer
-         "C-o" 'find-file-other-window
-                                               ;"C-w" 'kill-current-buffer
-         )
+  ;; File keybindings
+  ;(general-nvmap
+    ;"C-o" 'find-file
+    ;"C-S-o" 'find-file-other-window
+    ;)
 
-       ;; leader keys
-       (general-create-definer gn/leader-nvmap
-         :states '(normal visual)
-         :prefix "SPC"
-         :keymaps 'override)
+  ;; leader keys
+  (general-create-definer gn/leader-nvmap
+    :states '(normal visual)
+    :prefix "SPC"
+    :keymaps 'override)
 
-       (general-create-definer gn/leader-nmap
-         :states 'normal
-         :prefix "SPC"
-         :keymaps 'override)
+  (general-create-definer gn/leader-nmap
+    :states 'normal
+    :prefix "SPC"
+    :keymaps 'override)
 
-       (general-create-definer gn/leader-vmap
-         :states 'visual
-         :prefix "SPC"
-         :keymaps 'override)
+  (general-create-definer gn/leader-vmap
+    :states 'visual
+    :prefix "SPC"
+    :keymaps 'override)
 
 
-       (gn/leader-nmap
-         ":" 'execute-extended-command
-         "b" '(:ignore b :which-key "buffer")
-         "bs" 'save-buffer
-         "bq" 'kill-current-buffer
-         "q" 'evil-window-delete
-         "Q" 'delete-other-windows
-         "h" 'evil-window-left
-         "H" 'evil-window-move-far-left
-         "l" 'evil-window-right
-         "L" 'evil-window-move-far-right
-         "k" 'evil-window-up
-         "K" 'evil-window-move-very-top
-         "j" 'evil-window-down
-         "J" 'evil-window-move-very-bottom
-         "m" '(:ignore m :which-key "modes")
-         "mw" 'whitespace-mode)
+  (gn/leader-nmap
+    ":" 'execute-extended-command
+    "b" '(:ignore b :which-key "buffer")
+    "bs" 'save-buffer
+    "bq" 'kill-current-buffer
+    "bl" 'switch-to-buffer
+    "bL" 'switch-to-buffer-other-window
+    "bo" 'find-file
+    "bO" 'find-file-other-window
+    "q" 'evil-window-delete
+    "Q" 'delete-other-windows
+    "h" 'evil-window-left
+    "H" 'evil-window-move-far-left
+    "l" 'evil-window-right
+    "L" 'evil-window-move-far-right
+    "k" 'evil-window-up
+    "K" 'evil-window-move-very-top
+    "j" 'evil-window-down
+    "J" 'evil-window-move-very-bottom
+    "m" '(:ignore m :which-key "modes")
+    "mw" 'whitespace-mode)
 
-       (gn/leader-nmap emacs-lisp-mode-map
-         "e" 'eval-defun)
+  (gn/leader-nmap emacs-lisp-mode-map
+    "e" 'eval-defun)
 
-       (gn/leader-vmap emacs-lisp-mode-map
-         "e" 'eval-region)
-     #+end_src
+  (gn/leader-vmap emacs-lisp-mode-map
+    "e" 'eval-region)
+#+end_src
      
 ** Screen
 **** UI
-     #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
        (setq inhibit-startup-message t) ; Prevent launch message
        (menu-bar-mode -1) ; Disable the menu bar
        (tool-bar-mode -1) ; Disable the tool bar
 
 
-     #+end_src
+#+end_src
 **** Style
-     #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
        ;; Theme
        (use-package doom-themes
          :config
@@ -237,11 +240,11 @@
          :diminish which-key-mode
          :config
          (setq which-key-idle-delay 0.3))
-     #+end_src
+#+end_src
 
 ** Autocomplete
-   Setup completion tool
-   #+begin_src emacs-lisp
+Setup completion tool
+#+begin_src emacs-lisp
      (use-package ivy
        :bind (:map ivy-minibuffer-map
                    ("TAB" . ivy-alt-done)
@@ -268,11 +271,11 @@
        (define-key (current-global-map) [remap find-file] 'counsel-find-file)
        (define-key (current-global-map) [remap describe-function] 'counsel-describe-function)
        (define-key (current-global-map) [remap describe-variable] 'counsel-describe-variable))
-   #+end_src
+#+end_src
 
 ** Editor 
-   Prevent tabs when indenting
-   #+begin_src emacs-lisp
+Prevent tabs when indenting
+#+begin_src emacs-lisp
      (setq-default indent-tabs-mode nil)
 
      (column-number-mode)
@@ -280,13 +283,13 @@
 
      (dolist (mode '(org-mode-hook))
        (add-hook mode (lambda () (display-line-numbers-mode 0))))
-   #+end_src
+#+end_src
 
-   #+RESULTS:
+#+RESULTS:
 
 ** Packages
 *** Org Mode
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
       (use-package org)
       (require 'org-id)
 
@@ -300,10 +303,10 @@
       ;; General org mode stuff
       (gn/leader-nvmap
         "o" '(:ignore o :which-key "org-mode"))
-    #+end_src
+#+end_src
     
 **** Movement
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
       (define-minor-mode gn/org-movement-mode
         "Minor mode for org movements"
         :lighter " gn/org-movement"
@@ -313,10 +316,10 @@
       ;  "C-k" 'org-previous-visible-heading
       ;  "C-j" 'org-next-visible-heading
       ;  )
-    #+end_src
+#+end_src
     
 **** Editing
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
       (defun gn/org-insert-new-item ()
         "Inserts a new item (headings, checkboxes, or bullets)"
         (interactive)
@@ -373,10 +376,10 @@
         (cond ((org-in-src-block-p) (org-edit-special))
               ((org-at-heading-p) (org-tree-to-indirect-buffer))))
 
-    #+end_src
+#+end_src
     
 **** Todo
-     #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
        (setq org-todo-keywords
              '((sequence "TODO" "DOING(!)" "|" "DONE(!)")
                (sequence "ON-HOLD(o!)" "SCHEDULED(s)" "WAITING(w!)" "CANCELLED(c!)")))
@@ -401,9 +404,9 @@
                "TODO")
              org-todo)
          )
-     #+end_src
+#+end_src
 **** Agenda
-     #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
        (evil-set-initial-state 'org-agenda-mode 'normal)
 
        (setq org-agenda-files '("~/todo/actions.org"))
@@ -412,10 +415,10 @@
        (gn/leader-nmap
          "oa" 'org-agenda
         )
-     #+end_src
+#+end_src
 
 **** Capture
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
       (defvar gn/inbox-path "~/todo/inbox.org"
         "Path to inbox org file")
 
@@ -446,9 +449,9 @@
       (general-nmap org-capture-mode-map
         [remap save-buffer] 'org-capture-finalize
         [remap kill-current-buffer] 'org-capture-kill)
-    #+end_src
+#+end_src
 **** Source Mode
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
       (general-nmap org-src-mode-map
         [remap save-buffer] 'org-edit-src-exit
         [remap kill-current-buffer] 'org-edit-src-abort)
@@ -456,9 +459,9 @@
       ;; Don't confirm when evaluating src blocks
       (setq org-confirm-babel-evaluate nil)
 
-    #+end_src
+#+end_src
 **** Template
-     #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
        (defvar gn/org-template-path "~/todo/templates.org")
 
        (defun gn/org-template ()
@@ -499,13 +502,13 @@
                    (save-excursion (insert headline)))))
            )
          )
-     #+end_src
+#+end_src
 **** Getting Things Done
-     #+begin_src emacs-lisp :results none
-     #+end_src
+#+begin_src emacs-lisp :results none
+#+end_src
      
 **** Keybindings
-     #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
        (gn/leader-nvmap org-mode-map
          "e" 'org-ctrl-c-ctrl-c
          "bb" 'gn/org-open-scope
@@ -548,71 +551,73 @@
         "C-S-l" 'gn/org-demote
         )
 
-     #+end_src
+#+end_src
 *** Org HTML Export
-    #+begin_src emacs-lisp :results none
-      (require 'ox-html)
+#+begin_src emacs-lisp :results none
+  (require 'ox-html)
 
-      (org-export-define-derived-backend 'gn-blog-post-vue 'html
-        :translate-alist '((template . gn/org-blog-post-template)))
+  (org-export-define-derived-backend 'gn-blog-post-vue 'html
+    :options-alist '((:html_doctype "HTML_DOCTYPE" "HTML5" t)
+                     (:html_container "HTML_CONTAINER" "div" t))
+    :translate-alist '((template . gn/org-blog-post-template)))
 
-      ;(org-publish-project "gn-publish" t)
+  ;(org-publish-project "gn-publish" t)
 
 
-      ;'(setq gn/test )
-      ;'"./\\(?=.+?.\\(png\\|jpg\\)\\)" 
-      ;'(replace-regexp-in-string "./\\(?=.+?png\\)" "something" "<img src='./tessting.png'")
+  ;'(setq gn/test )
+  ;'"./\\(?=.+?.\\(png\\|jpg\\)\\)" 
+  ;'(replace-regexp-in-string "./\\(?=.+?png\\)" "something" "<img src='./tessting.png'")
 
-      (defun gn/org-blog-post-template (contents info)
-        "Template for org vue export"
-        (concat
-         "<template>\n"
-         "<div>\n"
-         (format "%s" info)
-         "</div>\n"
-         "</template>\n"
-         "<script>\n"
-         "export default {\n"
-         (format "title: '%s',\n"
-                 (org-export-data (plist-get info :title) info))
-                 "meta: [\n"
-         (format "{name: 'description', content: '%s'},"
-                 (org-export-data (plist-get info :description) info))
-         "],\n"
-         "}\n"
-         "</script>\n"
-         ))
+  (defun gn/org-blog-post-template (contents info)
+    "Template for org vue export"
+    (concat
+     "<template>\n"
+     "<div>\n"
+     (format "%s" info)
+     "</div>\n"
+     "</template>\n"
+     "<script>\n"
+     "export default {\n"
+     (format "title: '%s',\n"
+             (org-export-data (plist-get info :title) info))
+             "meta: [\n"
+     (format "{name: 'description', content: '%s'},"
+             (org-export-data (plist-get info :description) info))
+     "],\n"
+     "}\n"
+     "</script>\n"
+     ))
 
-      (defun gn/org-publish-as-blog-post
-          (&optional async subtreep visible-only body-only ext-plist)
-        (interactive)
-        (org-export-to-buffer 'gn-blog-post-vue "*Org HTML Export*"
-          async subtreep visible-only body-only ext-plist
-          (lambda () (set-auto-mode t))))
+  (defun gn/org-publish-as-blog-post
+      (&optional async subtreep visible-only body-only ext-plist)
+    (interactive)
+    (org-export-to-buffer 'gn-blog-post-vue "*Org HTML Export*"
+      async subtreep visible-only body-only ext-plist
+      (lambda () (set-auto-mode t))))
 
-      (defun gn/org-publish-blog-post-interactive
-          (&optional async subtreep visible-only body-only ext-plist)
-        (interactive)
-        (unless (file-directory-p pub-dir)
-          (make-directory pub-dir t))
-        (let* ((extension ".vue")
-               (file (org-export-output-file-name extension subtreep))
-               (org-export-coding-system org-html-coding-system))
-          (org-export-to-file 'gn-blog-post-vue file
-            async subtreep visible-only body-only ext-plist)))
+  (defun gn/org-publish-blog-post-interactive
+      (&optional async subtreep visible-only body-only ext-plist)
+    (interactive)
+    (unless (file-directory-p pub-dir)
+      (make-directory pub-dir t))
+    (let* ((extension ".vue")
+           (file (org-export-output-file-name extension subtreep))
+           (org-export-coding-system org-html-coding-system))
+      (org-export-to-file 'gn-blog-post-vue file
+        async subtreep visible-only body-only ext-plist)))
 
-      (defun gn/org-publish-blog-post (plist filename pub-dir)
-        (unless (file-directory-p pub-dir)
-          (make-directory pub-dir t))
-        (org-publish-org-to 'gn-blog-post-vue
-                            filename
-                            ".vue"
-                            plist
-                            pub-dir))
+  (defun gn/org-publish-blog-post (plist filename pub-dir)
+    (unless (file-directory-p pub-dir)
+      (make-directory pub-dir t))
+    (org-publish-org-to 'gn-blog-post-vue
+                        filename
+                        ".vue"
+                        plist
+                        pub-dir))
 
-      (provide 'gn-blog-post-vue)
+  (provide 'gn-blog-post-vue)
 
-    #+end_src
+#+end_src
 *** Org HTML publishing
 #+begin_src emacs-lisp :results none
   (setq org-publish-project-alist
@@ -638,7 +643,7 @@
 #+end_src
 
 *** PlantUML
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
       (use-package plantuml-mode)
 
       (setq plantuml-jar-path "~/config/emacs/plantuml.jar")
@@ -662,19 +667,19 @@
 
       (gn/leader-nvmap 'plantuml-mode-map
        "e" 'gn/preview-plantuml)
-    #+end_src
+#+end_src
 
 *** Pomodoro
-    :LOGBOOK:
-    CLOCK: [2021-03-12 Fri 15:51]--[2021-03-12 Fri 15:55] =>  0:04
-    :END:
-    #+begin_src emacs-lisp :results none
+:LOGBOOK:
+CLOCK: [2021-03-12 Fri 15:51]--[2021-03-12 Fri 15:55] =>  0:04
+:END:
+#+begin_src emacs-lisp :results none
       (use-package org-pomodoro)
-    #+end_src
+#+end_src
 
 
 *** Magit
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
       (use-package magit
         :config
         ;; Close transient with ESC
@@ -684,7 +689,7 @@
         (gn/leader-nvmap
           "v" 'magit-status)
         )
-    #+end_src
+#+end_src
 
     
     
@@ -706,7 +711,7 @@
 ** Development
    
 *** HTML/CSS
-    #+begin_src emacs-lisp :results none
+#+begin_src emacs-lisp :results none
       (use-package web-mode)
       (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
       (setq-default indent-tabs-mode nil)
@@ -715,7 +720,7 @@
       (use-package vue-mode)
       (setq mmm-js-mode-enter-hook (lambda () (setq syntax-ppss-table nil)))
       (setq mmm-typescript-mode-enter-hook (lambda () (setq syntax-ppss-table nil)))
-    #+end_src
+#+end_src
 
     
     
