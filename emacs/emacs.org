@@ -573,7 +573,7 @@ Prevent tabs when indenting
     (concat
      "<template>\n"
      "<div>\n"
-     (format "%s" info)
+     contents
      "</div>\n"
      "</template>\n"
      "<script>\n"
