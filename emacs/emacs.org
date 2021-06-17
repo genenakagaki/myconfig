@@ -1,70 +1,67 @@
 #+PROPERTY: header-args :tangle ~/.emacs.d/init.el
 
+* Package Management
+#+begin_src emacs-lisp :results none
+  (require 'package)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("melpa-stable" . "https://stable.melpa.org/packages/")
+                           ("org" . "https://orgmode.org/elpa/")
+                           ("elpa" . "https://elpa.gnu.org/packages/")))
+  (package-initialize)
+
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+
+  (require 'use-package)
+  (setq use-package-always-ensure t)
+  (setq use-package-always-demand t)
+
+  (use-package dash)
+#+end_src
+    
+* File Configuration
+#+begin_src emacs-lisp :results none
+  ;; Keep .emacs.d directory clean
+  (setq no-littering-etc-directory
+        (expand-file-name "config/" user-emacs-directory))
+  (setq no-littering-var-directory
+        (expand-file-name "data/" user-emacs-directory))
+
+  (use-package no-littering
+    :config 
+    (setq auto-save-file-name-transforms
+          `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+    (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
+    (load custom-file t))
+
+  (set-language-environment "Japanese")
+
+  ;; Use UTF-8
+  (prefer-coding-system 'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (setq default-buffer-file-coding-system 'utf-8)
+
+  ;; Autosave changed files
+  (use-package super-save
+    :diminish super-save-mode
+    :config
+    (super-save-mode +1)
+    (setq super-save-auto-save-when-idle t))
+
+  ;; Undo and redo
+  (use-package undo-tree
+    :config
+    (global-undo-tree-mode))
+#+end_src
+
+
+
 * My Emacs Config
 ** Initial Setup
 These have to be at the top of the init.el file
-*** Packages
-#+begin_src emacs-lisp :results none
-      ;; Setup package
-      (require 'package)
-
-      (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                               ("melpa-stable" . "https://stable.melpa.org/packages/")
-                               ("org" . "https://orgmode.org/elpa/")
-                               ("elpa" . "https://elpa.gnu.org/packages/")))
-      (package-initialize)
-
-
-      ;; Setup use-package
-      (unless (package-installed-p 'use-package)
-        (package-refresh-contents)
-        (package-install 'use-package))
-
-      (require 'use-package)
-      (setq use-package-always-ensure t)
-      (setq use-package-always-demand t)
-
-      (use-package dash)
-#+end_src
-    
-*** Files
-#+begin_src emacs-lisp :results none
-
-      ;; Keep .emacs.d directory clean
-      (setq no-littering-etc-directory
-            (expand-file-name "config/" user-emacs-directory))
-      (setq no-littering-var-directory
-            (expand-file-name "data/" user-emacs-directory))
-
-      (use-package no-littering
-        :config 
-        (setq auto-save-file-name-transforms
-              `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
-        (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
-        (load custom-file t))
-
-      (set-language-environment "Japanese")
-
-      ;; Use UTF-8
-      (prefer-coding-system 'utf-8)
-      (set-default-coding-systems 'utf-8)
-      (set-terminal-coding-system 'utf-8)
-      (set-keyboard-coding-system 'utf-8)
-      (setq default-buffer-file-coding-system 'utf-8)
-
-      ;; Autosave changed files
-      (use-package super-save
-        :diminish super-save-mode
-        :config
-        (super-save-mode +1)
-        (setq super-save-auto-save-when-idle t))
-
-      ;; Undo and redo
-      (use-package undo-tree
-        :config
-        (global-undo-tree-mode))
-#+end_src
-
 *** Keybindings
 #+begin_src emacs-lisp :results none
     (use-package general
@@ -205,7 +202,7 @@ These have to be at the top of the init.el file
     "e" 'eval-defun)
 
   (gn/leader-vmap emacs-lisp-mode-map
-    "e" 'eval-region)
+    "e" 'eval-last-sexp)
 #+end_src
      
 ** Screen
@@ -275,7 +272,7 @@ Setup completion tool
 
 ** Editor 
 Prevent tabs when indenting
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :results none
      (setq-default indent-tabs-mode nil)
 
      (column-number-mode)
@@ -285,24 +282,25 @@ Prevent tabs when indenting
        (add-hook mode (lambda () (display-line-numbers-mode 0))))
 #+end_src
 
-#+RESULTS:
-
-** Packages
+** Modules
 *** Org Mode
+#+begin_src emacs-lisp :results non
+  (use-package org)
+  (require 'org-id)
+#+end_src
+
+**** Screen
 #+begin_src emacs-lisp :results none
-      (use-package org)
-      (require 'org-id)
+  (setq org-return-follows-link t)
 
-      (setq org-return-follows-link t)
+  (add-hook 'org-mode-hook (lambda ()
+                             ;; make the lines in the buffer wrap around the edges of the screen.
+                             (visual-line-mode)
+                             (org-indent-mode)))
 
-      (add-hook 'org-mode-hook (lambda ()
-                                 ;; make the lines in the buffer wrap around the edges of the screen.
-                                 (visual-line-mode)
-                                 (org-indent-mode)))
-
-      ;; General org mode stuff
-      (gn/leader-nvmap
-        "o" '(:ignore o :which-key "org-mode"))
+  ;; General org mode stuff
+  (gn/leader-nvmap
+    "o" '(:ignore o :which-key "org-mode"))
 #+end_src
     
 **** Movement
@@ -379,6 +377,57 @@ Prevent tabs when indenting
 #+end_src
     
 **** Todo
+The problem I am facing
+#+begin_src plantuml :tangle no
+  @startuml
+  title My Daily Workflow
+
+  start
+  :Review agenda;
+  fork
+          repeat
+                  while (new information exists?\n- captured information\n- email\n- slack) is (yes)
+                          :<b>Clarify</b>
+                          - categorize information
+                            (task, reference, future project)
+                          - decide what the next task is
+                            for the information|
+                          :<b>Organize</b>
+                          - schedule
+                          - set priority|
+                  endwhile (no)
+                  :Execute|
+                  note left
+                          Do next task.
+                  end note
+
+          repeat while (still working?) is (yes)
+          ->no;
+  fork again
+          repeat  
+                  :<b>await new information</b>
+                  Wait until new information
+                  comes up.
+
+                  E.g.
+                  - someone talks to you
+                  - you read an article
+                    about something;
+                  :Capture|
+                  note left
+                          Store new information.
+                          E.g.
+                          - new tasks
+                          - ideas
+                  end note
+          repeat while (still working?) is (yes)
+          ->no;
+  end fork
+
+  :Plan for next workday;
+  stop
+  @enduml
+#+end_src
 #+begin_src emacs-lisp :results none
        (setq org-todo-keywords
              '((sequence "TODO" "DOING(!)" "|" "DONE(!)")
@@ -509,50 +558,51 @@ Prevent tabs when indenting
      
 **** Keybindings
 #+begin_src emacs-lisp :results none
-       (gn/leader-nvmap org-mode-map
-         "e" 'org-ctrl-c-ctrl-c
-         "bb" 'gn/org-open-scope
-         )
+  (gn/leader-nvmap org-mode-map
+    "e" 'org-ctrl-c-ctrl-c
+    "bb" 'gn/org-open-scope
+    )
 
-       (gn/leader-nmap org-mode-map
-         "i" '(:ignore i :which-key "insert")
-         "id" '(:ignore id :which-key "date")
-         "id SPC" 'org-time-stamp
-         "idi" 'org-time-stamp-inactive
-         "idd" 'org-deadline
-         "ids" 'org-schedule
-         "il" 'org-insert-link
-         "ii" 'org-id-get-create
-         "it" 'org-insert-structure-template
-         "iT" 'gn/org-insert-template
-         "D" 'org-cut-subtree
-         "y" '(:ignore y :which-key "yank")
-         "yi" 'org-id-copy
-         "yl" 'org-store-link
-         "t" '(:ignore t :which-key "toggle")
-         "T" 'gn/toggle-todo
-         "tt" 'org-todo
-         "tl" 'org-toggle-link-display
-         "ti" 'org-toggle-inline-images
-         "s" '(:ignore s :which-key "src")
-         "st" 'org-babel-tangle
-         "/" 'org-sparse-tree
-         )
+  (gn/leader-nmap org-mode-map
+    "i" '(:ignore i :which-key "insert")
+    "id" '(:ignore id :which-key "date")
+    "id SPC" 'org-time-stamp
+    "idi" 'org-time-stamp-inactive
+    "idd" 'org-deadline
+    "ids" 'org-schedule
+    "il" 'org-insert-link
+    "ii" 'org-id-get-create
+    "it" 'org-insert-structure-template
+    "iT" 'gn/org-insert-template
+    "D" 'org-cut-subtree
+    "y" '(:ignore y :which-key "yank")
+    "yi" 'org-id-copy
+    "yl" 'org-store-link
+    "t" '(:ignore t :which-key "toggle")
+    "T" 'gn/toggle-todo
+    "tt" 'org-todo
+    "tl" 'org-toggle-link-display
+    "ti" 'org-toggle-inline-images
+    "s" '(:ignore s :which-key "src")
+    "st" 'org-babel-tangle
+    "/" 'org-sparse-tree
+    )
 
-       (general-define-key
-        :states '(normal visual insert)
-        :keymaps 'org-mode-map
-        "C-<return>" 'gn/org-insert-new-item
-        "C-h" 'gn/org-promote-tree
-        "C-S-h" 'gn/org-promote
-        "C-j" 'gn/org-move-tree-down
-        "C-k" 'gn/org-move-tree-up
-        "C-l" 'gn/org-demote-tree
-        "C-S-l" 'gn/org-demote
-        )
+  (general-define-key
+   :states '(normal visual insert)
+   :keymaps 'org-mode-map
+   "C-<return>" 'gn/org-insert-new-item
+   "C-h" 'gn/org-promote-tree
+   "C-S-h" 'gn/org-promote
+   "C-j" 'gn/org-move-tree-down
+   "C-k" 'gn/org-move-tree-up
+   "C-l" 'gn/org-demote-tree
+   "C-S-l" 'gn/org-demote
+   )
 
 #+end_src
-*** Org HTML Export
+
+**** Org HTML Export
 #+begin_src emacs-lisp :results none
   (require 'ox-html)
 
@@ -561,12 +611,12 @@ Prevent tabs when indenting
                      (:html_container "HTML_CONTAINER" "div" t))
     :translate-alist '((template . gn/org-blog-post-template)))
 
-  ;(org-publish-project "gn-publish" t)
+                                          ;(org-publish-project "gn-publish" t)
 
 
-  ;'(setq gn/test )
-  ;'"./\\(?=.+?.\\(png\\|jpg\\)\\)" 
-  ;'(replace-regexp-in-string "./\\(?=.+?png\\)" "something" "<img src='./tessting.png'")
+                                          ;'(setq gn/test )
+                                          ;'"./\\(?=.+?.\\(png\\|jpg\\)\\)" 
+                                          ;'(replace-regexp-in-string "./\\(?=.+?png\\)" "something" "<img src='./tessting.png'")
 
   (defun gn/org-blog-post-template (contents info)
     "Template for org vue export"
@@ -580,7 +630,7 @@ Prevent tabs when indenting
      "export default {\n"
      (format "title: '%s',\n"
              (org-export-data (plist-get info :title) info))
-             "meta: [\n"
+     "meta: [\n"
      (format "{name: 'description', content: '%s'},"
              (org-export-data (plist-get info :description) info))
      "],\n"
@@ -618,7 +668,51 @@ Prevent tabs when indenting
   (provide 'gn-blog-post-vue)
 
 #+end_src
-*** Org HTML publishing
+**** TummyTracker
+#+begin_src emacs-lisp :results none
+  (org-export-define-derived-backend 'gn-tummytracker-entry 'html
+    :options-alist '((:html_doctype "HTML_DOCTYPE" "HTML5" t)
+                     (:html_container "HTML_CONTAINER" "div" t))
+    :translate-alist '((template . gn/tummytracker-entry-template)))
+
+  (defun gn/tummytracker-entry-template (contents info)
+    "Template for org vue export"
+    (concat
+     "<template>\n"
+     "<div>\n"
+     contents
+     "</div>\n"
+     "</template>\n"
+     "<script>\n"
+     "export default {\n"
+     "}\n"
+     "</script>\n"
+     ))
+
+  (defun gn/tummytracker-publish-org-interactive
+      (&optional async subtreep visible-only body-only ext-plist)
+    (interactive)
+    (unless (file-directory-p pub-dir)
+      (make-directory pub-dir t))
+    (let* ((extension ".vue")
+           (file (org-export-output-file-name extension subtreep))
+           (org-export-coding-system org-html-coding-system))
+      (org-export-to-file 'gn-tummytracker-entry file
+        async subtreep visible-only body-only ext-plist)))
+
+  (defun gn/tummytracker-publish-org (plist filename pub-dir)
+    (unless (file-directory-p pub-dir)
+      (make-directory pub-dir t))
+    (org-publish-org-to 'gn-tummytracker-entry
+                        filename
+                        ".vue"
+                        plist
+                        pub-dir))
+
+  (provide 'gn-tummytracker-entry)
+#+end_src
+
+**** Org HTML publishing
 #+begin_src emacs-lisp :results none
   (setq org-publish-project-alist
         '(
@@ -639,17 +733,31 @@ Prevent tabs when indenting
            :recursive t
            :publishing-function org-publish-attachment
            )
+
+          ("gn-tummytracker-publish"
+           :base-directory "~/tummytracker/entry/"
+           :base-extension "org"
+           :publishing-directory "~/tummytracker/app/src/pages/entry/"
+           :recursive t
+           :publishing-function gn/tummytracker-publish-org
+           :headline-levels 4
+           :auto-preamble t)
           ))
 #+end_src
 
-*** PlantUML
+
+#+begin_src emacs-lisp :results none
+#+end_src
+
+*** Packages
+**** PlantUML
 #+begin_src emacs-lisp :results none
       (use-package plantuml-mode)
 
-      (setq plantuml-jar-path "~/config/emacs/plantuml.jar")
+      (setq plantuml-jar-path "~/myconfig/emacs/plantuml.jar")
       (setq plantuml-default-exec-mode 'jar)
       (setq plantuml-output-type "png")
-      (setq org-plantuml-jar-path (expand-file-name "~/config/emacs/plantuml.jar"))
+      (setq org-plantuml-jar-path (expand-file-name "~/myconfig/emacs/plantuml.jar"))
       ;; Make plantuml available in org mode 
       (add-to-list
        'org-src-lang-modes '("plantuml" . plantuml))
@@ -669,7 +777,7 @@ Prevent tabs when indenting
        "e" 'gn/preview-plantuml)
 #+end_src
 
-*** Pomodoro
+**** Pomodoro
 :LOGBOOK:
 CLOCK: [2021-03-12 Fri 15:51]--[2021-03-12 Fri 15:55] =>  0:04
 :END:
@@ -678,7 +786,7 @@ CLOCK: [2021-03-12 Fri 15:51]--[2021-03-12 Fri 15:55] =>  0:04
 #+end_src
 
 
-*** Magit
+**** Magit
 #+begin_src emacs-lisp :results none
       (use-package magit
         :config
@@ -707,10 +815,10 @@ CLOCK: [2021-03-12 Fri 15:51]--[2021-03-12 Fri 15:55] =>  0:04
     
     
     
-    
-** Development
+
+*** Developmentk
    
-*** HTML/CSS
+**** HTML/CSS
 #+begin_src emacs-lisp :results none
       (use-package web-mode)
       (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))

@@ -1,0 +1,2 @@
+#+PROPERTY: header-args :tangle ./tangled/config-org-mode.el
+
