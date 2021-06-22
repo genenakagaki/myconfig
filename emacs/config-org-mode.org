@@ -23,8 +23,6 @@
     )
 
   (gn/leader-nmap org-mode-map
-    "a" 'org-agenda
-    "c" 'org-capture
     "i" '(:ignore i :which-key "insert")
     "id" '(:ignore id :which-key "date")
     "id SPC" 'org-time-stamp
@@ -39,11 +37,13 @@
     "y" '(:ignore y :which-key "yank")
     "yi" 'org-id-copy
     "yl" 'org-store-link
-    "t" '(:ignore t :which-key "toggle")
-    "T" 'gn/toggle-todo
-    "tt" 'org-todo
-    "tl" 'org-toggle-link-display
-    "ti" 'org-toggle-inline-images
+    "t" '(:ignore t :which-key "todo")
+    "t SPC" 'org-todo
+    "tn" 'gn/next-todo
+    "tp" 'org-priority
+    "s" '(:ignore v :which-key "screen")
+    "sl" 'org-toggle-link-display
+    "si" 'org-toggle-inline-images
     "s" '(:ignore s :which-key "src")
     "st" 'org-babel-tangle
     "/" 'org-sparse-tree
@@ -206,16 +206,17 @@ The problem I am facing
 
 #+begin_src emacs-lisp :results none
   (setq org-capture-templates
-        '(("i" "Inbox" entry (file gn/inbox-path "Inbox")
+        '(("i" "Inbox" entry (file gn/inbox-path)
            "* %?")
           ))
 
+  (setq org-refile-use-outline-path 'file)
+
   (setq org-refile-targets
-        '((gn/inbox-path :level . 1)
-          (gn/todo-path :level . 1)
-          (gn/reference-path :level . 1)
-          (gn/incubator-path :level . 1)
-          ))
+        '((gn/inbox-path :level . 0)
+          (gn/todo-path :level . 0)
+          (gn/reference-path :level . 0)
+          (gn/incubator-path :level . 0)))
 
   (general-nmap org-capture-mode-map
     [remap save-buffer] 'org-capture-finalize
@@ -294,34 +295,42 @@ The problem I am facing
 #+end_src
 
 #+begin_src emacs-lisp :results none
+
+#+end_src
+
+#+begin_src emacs-lisp :results none
   (setq org-todo-keywords
         '((sequence "TODO" "DOING" "|" "DONE")
           (sequence "ON-HOLD(o)" "SCHEDULED(s)" "WAITING(w)" "CANCELLED(c)")))
 
-  (defun gn/next-todo (current-todo)
+  (defun gn/next-todo-string (current-todo)
     "Returns next todo"
-    (cond ((equal current-todo "TODO") "DOING")
-          ((equal current-todo "ON-HOLD") "DOING")
-          ((equal current-todo "SCHEDULED") "DOING")
-          ((equal current-todo "WAITING") "DOING")
-          ((equal current-todo "DOING") "DONE")))
+    (cond ((or (equal current-todo "TODO")
+               (equal current-todo "ON-HOLD")
+               (equal current-todo "SCHEDULED")
+               (equal current-todo "WAITING"))
+           "DOING")
+          ((equal current-todo "DOING")
+           "DONE")))
 
-  (defun gn/current-todo ()
+  (defun gn/current-todo-string ()
     (if (org-entry-is-todo-p)
         (-> (org-get-todo-state)
           substring-no-properties)
       nil))
 
-  (defun gn/toggle-todo ()
+  (defun gn/next-todo ()
     "Toggle TODO states"
     (interactive)
     (org-todo (if (org-entry-is-todo-p) 
-                  (gn/next-todo (gn/current-todo))
+                  (gn/next-todo-string (gn/current-todo-string))
                 "TODO"))
     (if (equal (gn/current-todo) "DOING")
         (org-clock-in)
       (org-clock-out)))
 #+end_src
+
+*** Execute
 
 ** Agenda
 #+begin_src emacs-lisp :results none
