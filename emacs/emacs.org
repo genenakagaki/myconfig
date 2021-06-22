@@ -68,85 +68,78 @@ These have to be at the top of the init.el file
         :config
         (general-evil-setup))
 #+end_src
-    
+
 ** Keybindings
-**** Vim
+
+
+*** Evil
 #+begin_src emacs-lisp :results none
-       ;; Vim keybindings
-       (use-package evil
-         :init
-         (setq evil-want-integration t)
-         (setq evil-want-keybinding nil)
-         (setq evil-want-C-u-scroll t)
-         (setq evil-want-C-i-jump nil)
-         :config
-         (evil-mode 1)
-         (setq evil-undo-system 'undo-tree)
-         (evil-define-key 'insert 'global
-           (kbd "C-g") 'evil-normal-state)
-
-         (general-nvmap
-           "SPC" nil
-           "TAB" nil
-           "C-o" nil ; Open files
-           "C-O" nil ; Open new files
-           "C-k" nil
-
-           ;; Always use visual motion
-           "j" 'evil-next-visual-line
-           "k" 'evil-previous-visual-line
-
-           ;; Custom motion commands
-           "H" 'evil-first-non-blank
-           "J" 'evil-scroll-down
-           "K" 'evil-scroll-up
-           "L" 'evil-end-of-line
-           )
-
-         (general-nmap
-           ;; Custom delete commands
-           "d" (general-key-dispatch 'evil-delete
-                 "n" 'evil-join
-                 "j" (general-simulate-key ('evil-delete "gj"))
-                 "k" (general-simulate-key ('evil-delete "gk"))
-                 "H" (general-simulate-key ('evil-delete "^"))
-                 "J" (general-simulate-key ('evil-delete "C-d"))
-                 "K" (general-simulate-key ('evil-delete "C-u"))
-                 "L" (general-simulate-key ('evil-delete "$"))
-                 ))
-         ;; `evil-delete' is not bound in `evil-visual-state-map' by default but
-         ;; inherited from `evil-normal-state-map'
-         ;; This keeps the default behavior in visual state
-         (general-vmap "d" 'evil-delete)
-
-         (general-nmap
-           ;; Custom change commands
-           "c" (general-key-dispatch 'evil-change
-                 "n" 'evil-join
-                 "j" (general-simulate-key ('evil-change "gj"))
-                 "k" (general-simulate-key ('evil-change "gk"))
-                 "H" (general-simulate-key ('evil-change "^"))
-                 "J" (general-simulate-key ('evil-change "C-d"))
-                 "K" (general-simulate-key ('evil-change "C-u"))
-                 "L" (general-simulate-key ('evil-change "$"))
-                 ))
-         ;; `evil-change' is not bound in `evil-visual-state-map' by default but
-         ;; inherited from `evil-normal-state-map'
-         ;; This keeps the default behavior in visual state
-         (general-vmap "c" 'evil-change)
-
-          (evil-set-initial-state 'messages-buffer-mode 'normal)
-          (evil-set-initial-state 'dashboard-mode 'normal))
-
-         (use-package evil-collection
-           :after evil
-           :config
-           (evil-collection-init))
-
-
+  (setq evil-want-integration t)
+  (setq evil-want-keybinding nil)
+  (setq evil-want-C-u-scroll t)
+  (setq evil-want-C-i-jump nil)
+  (use-package evil)
+  (evil-mode 1)
+  (setq evil-undo-system 'undo-tree)
 #+end_src
 
-**** Keybindings
+*** Vim
+#+begin_src emacs-lisp :results none
+  ;; Vim keybindings
+  (evil-define-key 'insert 'global
+    (kbd "C-g") 'evil-normal-state)
+
+  (defun gn/evil-scroll-down ()
+    "Scroll down half screen and center screen"
+    (interactive)
+    (evil-scroll-down nil)
+    (evil-scroll-line-to-center (line-number-at-pos)))
+
+  (defun gn/evil-scroll-up ()
+    "Scroll up half screen and center screen."
+    (interactive)
+    (evil-scroll-up nil)
+    (evil-scroll-line-to-center (line-number-at-pos)))
+
+  (general-nvmap
+    "SPC" nil
+    "TAB" nil
+    "RET" nil
+
+    ;; Always use visual motion
+    "j" 'evil-next-visual-line
+    "k" 'evil-previous-visual-line
+
+    ;; Custom motion commands
+    "H" 'evil-first-non-blank
+    "J" 'gn/evil-scroll-down
+    "K" 'gn/evil-scroll-up
+    "L" 'evil-end-of-line
+    )
+
+  (general-nmap
+    ;; Custom delete commands
+    "d" (general-key-dispatch 'evil-delete
+          "n" 'evil-join
+          "j" (general-simulate-key ('evil-delete "gj"))
+          "k" (general-simulate-key ('evil-delete "gk"))
+          "H" (general-simulate-key ('evil-delete "^"))
+          "J" (general-simulate-key ('evil-delete "C-d"))
+          "K" (general-simulate-key ('evil-delete "C-u"))
+          "L" (general-simulate-key ('evil-delete "$"))
+          ))
+  ;; `evil-delete' is not bound in `evil-visual-state-map' by default but
+  ;; inherited from `evil-normal-state-map'
+  ;; This keeps the default behavior in visual state
+  (general-vmap "d" 'evil-delete)
+
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
+#+end_src
+
+*** Keybindings
 #+begin_src emacs-lisp :results none
   (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
@@ -204,9 +197,9 @@ These have to be at the top of the init.el file
   (gn/leader-vmap emacs-lisp-mode-map
     "e" 'eval-last-sexp)
 #+end_src
-     
+
 ** Screen
-**** UI
+*** UI
 #+begin_src emacs-lisp :results none
        (setq inhibit-startup-message t) ; Prevent launch message
        (menu-bar-mode -1) ; Disable the menu bar
@@ -214,7 +207,7 @@ These have to be at the top of the init.el file
 
 
 #+end_src
-**** Style
+*** Style
 #+begin_src emacs-lisp :results none
        ;; Theme
        (use-package doom-themes
@@ -283,472 +276,16 @@ Prevent tabs when indenting
 #+end_src
 
 ** Modules
+*** Emacs Helpers
+#+begin_src emacs-lisp :results none
+  (use-package command-log-mode
+    :commands command-log-mode)
+#+end_src
+
 *** Org Mode
-#+begin_src emacs-lisp :results non
-  (use-package org)
-  (require 'org-id)
-#+end_src
-
-**** Screen
 #+begin_src emacs-lisp :results none
-  (setq org-return-follows-link t)
-
-  (add-hook 'org-mode-hook (lambda ()
-                             ;; make the lines in the buffer wrap around the edges of the screen.
-                             (visual-line-mode)
-                             (org-indent-mode)))
-
-  ;; General org mode stuff
-  (gn/leader-nvmap
-    "o" '(:ignore o :which-key "org-mode"))
+  (org-babel-load-file "~/myconfig/emacs/config-org-mode.org")
 #+end_src
-    
-**** Movement
-#+begin_src emacs-lisp :results none
-      (define-minor-mode gn/org-movement-mode
-        "Minor mode for org movements"
-        :lighter " gn/org-movement"
-        )
-
-      ;(general-nvmap org-mode-map
-      ;  "C-k" 'org-previous-visible-heading
-      ;  "C-j" 'org-next-visible-heading
-      ;  )
-#+end_src
-    
-**** Editing
-#+begin_src emacs-lisp :results none
-      (defun gn/org-insert-new-item ()
-        "Inserts a new item (headings, checkboxes, or bullets)"
-        (interactive)
-        (evil-append-line 0)
-        (cond ((org-at-heading-p) (org-insert-heading-respect-content)) 
-              ((org-at-item-checkbox-p) (org-insert-todo-heading nil))
-              ((org-at-item-p) (org-insert-item))))
-
-      (defun gn/org-promote ()
-        "Moves item position (headings, checkboxes, or bullets)"
-        (interactive)
-        (cond ((org-at-heading-p) (org-do-promote))
-              ((org-at-item-p) (org-outdent-item))))
-
-      (defun gn/org-promote-tree ()
-        "Moves item position (headings, checkboxes, or bullets)"
-        (interactive)
-        (cond ((org-at-heading-p) (org-promote-subtree))
-              ((org-at-item-p) (org-outdent-item-tree))))
-
-      (defun gn/org-demote ()
-        "Demotes item (headings, lists)"
-        (interactive)
-        (cond ((org-at-heading-p) (org-do-demote))
-              ((org-at-item-p) (org-indent-item))))
-
-      (defun gn/org-demote-tree ()
-        "Demotes item (headings, lists)"
-        (interactive)
-        (cond ((org-at-heading-p) (org-demote-subtree))
-              ((org-at-item-p) (org-indent-item-tree))))
-
-      (defun gn/org-demote-tree ()
-        "Demotes item (headings, lists)"
-        (interactive)
-        (cond ((org-at-heading-p) (org-demote-subtree))
-              ((org-at-item-p) (org-indent-item-tree))))
-
-      (defun gn/org-move-tree-up ()
-        "Moves item up (headings, lists)"
-        (interactive)
-        (cond ((org-at-heading-p) (org-move-subtree-up))
-              ((org-at-item-p) (org-move-item-up))))
-
-      (defun gn/org-move-tree-down ()
-        "Moves item down (headings, lists)"
-        (interactive)
-        (cond ((org-at-heading-p) (org-move-subtree-down))
-              ((org-at-item-p) (org-move-item-down))))
-
-      (defun gn/org-open-scope ()
-        "Open subtree or block in new buffer"
-        (interactive)
-        (cond ((org-in-src-block-p) (org-edit-special))
-              ((org-at-heading-p) (org-tree-to-indirect-buffer))))
-
-#+end_src
-    
-**** Todo
-The problem I am facing
-#+begin_src plantuml :tangle no
-  @startuml
-  title My Daily Workflow
-
-  start
-  :Review agenda;
-  fork
-          repeat
-                  while (new information exists?\n- captured information\n- email\n- slack) is (yes)
-                          :<b>Clarify</b>
-                          - categorize information
-                            (task, reference, future project)
-                          - decide what the next task is
-                            for the information|
-                          :<b>Organize</b>
-                          - schedule
-                          - set priority|
-                  endwhile (no)
-                  :Execute|
-                  note left
-                          Do next task.
-                  end note
-
-          repeat while (still working?) is (yes)
-          ->no;
-  fork again
-          repeat  
-                  :<b>await new information</b>
-                  Wait until new information
-                  comes up.
-
-                  E.g.
-                  - someone talks to you
-                  - you read an article
-                    about something;
-                  :Capture|
-                  note left
-                          Store new information.
-                          E.g.
-                          - new tasks
-                          - ideas
-                  end note
-          repeat while (still working?) is (yes)
-          ->no;
-  end fork
-
-  :Plan for next workday;
-  stop
-  @enduml
-#+end_src
-#+begin_src emacs-lisp :results none
-       (setq org-todo-keywords
-             '((sequence "TODO" "DOING(!)" "|" "DONE(!)")
-               (sequence "ON-HOLD(o!)" "SCHEDULED(s)" "WAITING(w!)" "CANCELLED(c!)")))
-
-       (setq org-log-into-drawer "LOGBOOK")
-
-       (defun gn/org-next-todo (todo)
-         "Returns next todo"
-         (cond ((equal todo "TODO") "DOING")
-               ((equal todo "ON-HOLD") "DOING")
-               ((equal todo "SCHEDULED") "DOING")
-               ((equal todo "WAITING") "DOING")
-               ((equal todo "DOING") "DONE")))
-
-       (defun gn/toggle-todo ()
-         "Toggle TODO and DONE"
-         (interactive)
-         (-> (if (org-entry-is-todo-p)
-                 (-> (org-get-todo-state)
-                     substring-no-properties
-                     gn/org-next-todo)
-               "TODO")
-             org-todo)
-         )
-#+end_src
-**** Agenda
-#+begin_src emacs-lisp :results none
-       (evil-set-initial-state 'org-agenda-mode 'normal)
-
-       (setq org-agenda-files '("~/todo/actions.org"))
-       (setq org-agenda-log-mode-items '(state))
-
-       (gn/leader-nmap
-         "oa" 'org-agenda
-        )
-#+end_src
-
-**** Capture
-#+begin_src emacs-lisp :results none
-      (defvar gn/inbox-path "~/todo/inbox.org"
-        "Path to inbox org file")
-
-      (setq org-capture-templates
-            '(("i" "Inbox" entry (file+headline gn/inbox-path "Inbox")
-               "** %?")
-              ("w" "Work Actions" entry (file+headline "~/todo/actions.org" "Work")
-               "** %?")
-              ("h" "Home Actions" entry (file+headline "~/todo/actions.org" "Home")
-               "** %?")
-              ("t" "When I have time Actions" entry (file+headline "~/todo/actions.org" "When I have time")
-               "** %?")
-              ("r" "Responding" entry (file+headline "~/todo/actions.org" "Work")
-               "** TODO Responding: \nHelping\nAnswering to question %?")
-              ))
-
-      (setq org-refile-targets
-            '((gn/inbox-path :level . 1)
-              ("~/todo/actions.org" :level . 1)
-              ("~/todo/incubator.org" :level . 1)
-              ("~/todo/references.org" :level . 1)
-              ))
-
-      (gn/leader-nvmap 
-        "oc" 'org-capture
-        )
-
-      (general-nmap org-capture-mode-map
-        [remap save-buffer] 'org-capture-finalize
-        [remap kill-current-buffer] 'org-capture-kill)
-#+end_src
-**** Source Mode
-#+begin_src emacs-lisp :results none
-      (general-nmap org-src-mode-map
-        [remap save-buffer] 'org-edit-src-exit
-        [remap kill-current-buffer] 'org-edit-src-abort)
-
-      ;; Don't confirm when evaluating src blocks
-      (setq org-confirm-babel-evaluate nil)
-
-#+end_src
-**** Template
-#+begin_src emacs-lisp :results none
-       (defvar gn/org-template-path "~/todo/templates.org")
-
-       (defun gn/org-template ()
-         ""
-         (with-temp-buffer
-           (insert-file-contents gn/org-template-path)
-           (org-mode)
-           (org-element-parse-buffer)))
-
-       (defun gn/org-template-headlines (max-headline-level)
-         "Get org template headlines
-
-       MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
-         (org-element-map (gn/org-template) 'headline
-           (lambda (h)
-             (when (<= (org-element-property :level h)
-                       max-headline-level)
-               h))))
-
-       (defvar gn/org-max-headline-level 2)
-
-       (defun gn/org-insert-template ()
-         (interactive)
-         (let ((headlines (gn/org-template-headlines gn/org-max-headline-level)))
-           (->> headlines
-                (-map (lambda
-                        (headline)
-                        (org-element-property :raw-value headline)))
-                (completing-read "Select a template: ")
-                ((lambda (headline-raw-value)
-                   (-first (lambda
-                             (headline)
-                             (string= headline-raw-value
-                                      (org-element-property :raw-value headline)))
-                           headlines)))
-                (org-element-interpret-data)
-                ((lambda (headline)
-                   (save-excursion (insert headline)))))
-           )
-         )
-#+end_src
-**** Getting Things Done
-#+begin_src emacs-lisp :results none
-#+end_src
-     
-**** Keybindings
-#+begin_src emacs-lisp :results none
-  (gn/leader-nvmap org-mode-map
-    "e" 'org-ctrl-c-ctrl-c
-    "bb" 'gn/org-open-scope
-    )
-
-  (gn/leader-nmap org-mode-map
-    "i" '(:ignore i :which-key "insert")
-    "id" '(:ignore id :which-key "date")
-    "id SPC" 'org-time-stamp
-    "idi" 'org-time-stamp-inactive
-    "idd" 'org-deadline
-    "ids" 'org-schedule
-    "il" 'org-insert-link
-    "ii" 'org-id-get-create
-    "it" 'org-insert-structure-template
-    "iT" 'gn/org-insert-template
-    "D" 'org-cut-subtree
-    "y" '(:ignore y :which-key "yank")
-    "yi" 'org-id-copy
-    "yl" 'org-store-link
-    "t" '(:ignore t :which-key "toggle")
-    "T" 'gn/toggle-todo
-    "tt" 'org-todo
-    "tl" 'org-toggle-link-display
-    "ti" 'org-toggle-inline-images
-    "s" '(:ignore s :which-key "src")
-    "st" 'org-babel-tangle
-    "/" 'org-sparse-tree
-    )
-
-  (general-define-key
-   :states '(normal visual insert)
-   :keymaps 'org-mode-map
-   "C-<return>" 'gn/org-insert-new-item
-   "C-h" 'gn/org-promote-tree
-   "C-S-h" 'gn/org-promote
-   "C-j" 'gn/org-move-tree-down
-   "C-k" 'gn/org-move-tree-up
-   "C-l" 'gn/org-demote-tree
-   "C-S-l" 'gn/org-demote
-   )
-
-#+end_src
-
-**** Org HTML Export
-#+begin_src emacs-lisp :results none
-  (require 'ox-html)
-
-  (org-export-define-derived-backend 'gn-blog-post-vue 'html
-    :options-alist '((:html_doctype "HTML_DOCTYPE" "HTML5" t)
-                     (:html_container "HTML_CONTAINER" "div" t))
-    :translate-alist '((template . gn/org-blog-post-template)))
-
-                                          ;(org-publish-project "gn-publish" t)
-
-
-                                          ;'(setq gn/test )
-                                          ;'"./\\(?=.+?.\\(png\\|jpg\\)\\)" 
-                                          ;'(replace-regexp-in-string "./\\(?=.+?png\\)" "something" "<img src='./tessting.png'")
-
-  (defun gn/org-blog-post-template (contents info)
-    "Template for org vue export"
-    (concat
-     "<template>\n"
-     "<div>\n"
-     contents
-     "</div>\n"
-     "</template>\n"
-     "<script>\n"
-     "export default {\n"
-     (format "title: '%s',\n"
-             (org-export-data (plist-get info :title) info))
-     "meta: [\n"
-     (format "{name: 'description', content: '%s'},"
-             (org-export-data (plist-get info :description) info))
-     "],\n"
-     "}\n"
-     "</script>\n"
-     ))
-
-  (defun gn/org-publish-as-blog-post
-      (&optional async subtreep visible-only body-only ext-plist)
-    (interactive)
-    (org-export-to-buffer 'gn-blog-post-vue "*Org HTML Export*"
-      async subtreep visible-only body-only ext-plist
-      (lambda () (set-auto-mode t))))
-
-  (defun gn/org-publish-blog-post-interactive
-      (&optional async subtreep visible-only body-only ext-plist)
-    (interactive)
-    (unless (file-directory-p pub-dir)
-      (make-directory pub-dir t))
-    (let* ((extension ".vue")
-           (file (org-export-output-file-name extension subtreep))
-           (org-export-coding-system org-html-coding-system))
-      (org-export-to-file 'gn-blog-post-vue file
-        async subtreep visible-only body-only ext-plist)))
-
-  (defun gn/org-publish-blog-post (plist filename pub-dir)
-    (unless (file-directory-p pub-dir)
-      (make-directory pub-dir t))
-    (org-publish-org-to 'gn-blog-post-vue
-                        filename
-                        ".vue"
-                        plist
-                        pub-dir))
-
-  (provide 'gn-blog-post-vue)
-
-#+end_src
-**** TummyTracker
-#+begin_src emacs-lisp :results none
-  (org-export-define-derived-backend 'gn-tummytracker-entry 'html
-    :options-alist '((:html_doctype "HTML_DOCTYPE" "HTML5" t)
-                     (:html_container "HTML_CONTAINER" "div" t))
-    :translate-alist '((template . gn/tummytracker-entry-template)))
-
-  (defun gn/tummytracker-entry-template (contents info)
-    "Template for org vue export"
-    (concat
-     "<template>\n"
-     "<div>\n"
-     contents
-     "</div>\n"
-     "</template>\n"
-     "<script>\n"
-     "export default {\n"
-     "}\n"
-     "</script>\n"
-     ))
-
-  (defun gn/tummytracker-publish-org-interactive
-      (&optional async subtreep visible-only body-only ext-plist)
-    (interactive)
-    (unless (file-directory-p pub-dir)
-      (make-directory pub-dir t))
-    (let* ((extension ".vue")
-           (file (org-export-output-file-name extension subtreep))
-           (org-export-coding-system org-html-coding-system))
-      (org-export-to-file 'gn-tummytracker-entry file
-        async subtreep visible-only body-only ext-plist)))
-
-  (defun gn/tummytracker-publish-org (plist filename pub-dir)
-    (unless (file-directory-p pub-dir)
-      (make-directory pub-dir t))
-    (org-publish-org-to 'gn-tummytracker-entry
-                        filename
-                        ".vue"
-                        plist
-                        pub-dir))
-
-  (provide 'gn-tummytracker-entry)
-#+end_src
-
-**** Org HTML publishing
-#+begin_src emacs-lisp :results none
-  (setq org-publish-project-alist
-        '(
-          ("gn-publish" :components ("gn-publish-org" "gn-publish-static"))
-          ("gn-publish-org"
-           :base-directory "~/things/blog-posts/"
-           :base-extension "org"
-           :publishing-directory "~/things/web/pages/"
-           :recursive t
-           :publishing-function gn/org-publish-blog-post
-           :headline-levels 4
-           :auto-preamble t
-           )
-          ("gn-publish-static"
-           :base-directory "~/things/blog-posts/"
-           :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf"
-           :publishing-directory "~/things/web/static/"
-           :recursive t
-           :publishing-function org-publish-attachment
-           )
-
-          ("gn-tummytracker-publish"
-           :base-directory "~/tummytracker/entry/"
-           :base-extension "org"
-           :publishing-directory "~/tummytracker/app/src/pages/entry/"
-           :recursive t
-           :publishing-function gn/tummytracker-publish-org
-           :headline-levels 4
-           :auto-preamble t)
-          ))
-#+end_src
-
-
-#+begin_src emacs-lisp :results none
-#+end_src
-
 *** Packages
 **** PlantUML
 #+begin_src emacs-lisp :results none
