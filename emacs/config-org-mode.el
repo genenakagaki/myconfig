@@ -169,7 +169,7 @@
         ((equal current-todo "DOING")
          "DONE")))
 
-(defun gn/current-todo ()
+(defun gn/current-todo-string ()
   (if (org-entry-is-todo-p)
       (-> (org-get-todo-state)
         substring-no-properties)
@@ -179,7 +179,7 @@
   "Toggle TODO states"
   (interactive)
   (org-todo (if (org-entry-is-todo-p) 
-                (gn/next-todo-string (gn/current-todo))
+                (gn/next-todo-string (gn/current-todo-string))
               "TODO"))
   (if (equal (gn/current-todo) "DOING")
       (org-clock-in)

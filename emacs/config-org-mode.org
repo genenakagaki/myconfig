@@ -145,17 +145,18 @@
 The problem I am facing
 #+begin_src plantuml :tangle no
   @startuml
-  title My Daily Workflow
+  title My Workflow
 
   start
+  :Start working;
   :Review agenda;
   fork
           repeat
-                  while (new information exists?) is (yes)
+                  while (item exists in inbox?) is (yes)
                           :Clarify|
                           :Organize|
                   endwhile (no)
-                  :Execute|
+                  :Engage|
           repeat while (still working?) is (yes)
           ->no;
   fork again
@@ -193,9 +194,7 @@ The problem I am facing
   split
           :check email;
   split again
-          :check Slack;
-  split again
-          :check ChatWork;
+          :check chat;
   end split
   :store in **inbox**
   - new tasks
@@ -229,68 +228,65 @@ The problem I am facing
   title Clarify
 
   start
-  :item in inbox/
-  if (is it actionable?) then (no)
+  :item in **inbox**/
+  if (actionable?) then (no)
+          if (need it for reference?) then (no)
+                  if (potentially a future project?) then (no)
+                          :delete item;
+                          stop
+                  else (yes)
+                          :Why|
+                          :add incubator tag;
+                          :add next action:
+                          - write down your idea;
+                  endif
+          else (yes)
+                  :Why|
+                  :add reference tag;
+                  :add next action:
+                  - organize reference;
 
+          endif
   else (yes)
+          if (can complete in under 2 min?) then (no)
+                  if (can delegate?) then (no)
+                          :Why|
+                          :add relevant tag;
+                          :add next action:
+                          - plan task;
+                  else (yes)
+                          :Why|
+                          :add delegate tag;
+                          :add next action:
+                          - delegate task;
+                  endif
+          else (yes)
+                  :DO IT NOW!;
+                  :delete item;
+                  stop
+          endif
   endif
-  if (can you do it in 2 min?) then (no)
-          if ()
-  else (yes)
-          :do it now;
-          stop
-  endif
-
+  :set priority;
+  :set due date;
+  :set scheduled date;
+  :move to **todo**;
   stop
   @enduml
 #+end_src
+
 #+begin_src plantuml :tangle no
   @startuml
-  title My Daily Workflow
+  title Why
 
   start
-  :Review agenda;
-  fork
-          repeat
-                  while (new information exists?\n- captured information\n- email\n- slack) is (yes)
-                          :<b>Clarify</b>
-                          - categorize information
-                            (task, reference, future project)
-                          - decide what the next task is
-                            for the information|
-                          :<b>Organize</b>
-                          - schedule
-                          - set priority|
-                  endwhile (no)
-                  :Execute|
-                  note left
-                          Do next task.
-                  end note
-          repeat while (still working?) is (yes)
-          ->no;
-  fork again
-          repeat  
-                  :<b>await new information</b>
-                  Wait until new information
-                  comes up.
-
-                  E.g.
-                  - someone talks to you
-                  - you read an article
-                    about something;
-                  :Capture|
-                  note left
-                          Store new information.
-                          E.g.
-                          - new tasks
-                          - ideas
-                  end note
-          repeat while (still working?) is (yes)
-          ->no;
-  end fork
-
-  :Plan for next workday;
-  stop
+  :todo item/
+  if (reason exists?) then (no)
+          :delete item;
+          stop
+  else (yes)
+          :write down why;
+          stop
+  endif
   @enduml
 #+end_src
 
@@ -393,10 +389,6 @@ The problem I am facing
            )
          )
 #+end_src
-** Getting Things Done
-#+begin_src emacs-lisp :results none
-#+end_src
-     
 ** Org HTML Export
 #+begin_src emacs-lisp :results none
   (require 'ox-html)
