@@ -171,6 +171,12 @@ These have to be at the top of the init.el file
 
   (gn/leader-nmap
     ":" 'execute-extended-command
+
+    ; Org commands
+    "a" 'org-agenda
+    "c" 'org-capture
+
+    ; Buffer commands
     "b" '(:ignore b :which-key "buffer")
     "bs" 'save-buffer
     "bq" 'kill-current-buffer
@@ -178,6 +184,8 @@ These have to be at the top of the init.el file
     "bL" 'switch-to-buffer-other-window
     "bo" 'find-file
     "bO" 'find-file-other-window
+
+    ; Window commands
     "q" 'evil-window-delete
     "Q" 'delete-other-windows
     "h" 'evil-window-left
@@ -188,6 +196,8 @@ These have to be at the top of the init.el file
     "K" 'evil-window-move-very-top
     "j" 'evil-window-down
     "J" 'evil-window-move-very-bottom
+
+    ; Modes
     "m" '(:ignore m :which-key "modes")
     "mw" 'whitespace-mode)
 
@@ -315,9 +325,6 @@ Prevent tabs when indenting
 #+end_src
 
 **** Pomodoro
-:LOGBOOK:
-CLOCK: [2021-03-12 Fri 15:51]--[2021-03-12 Fri 15:55] =>  0:04
-:END:
 #+begin_src emacs-lisp :results none
       (use-package org-pomodoro)
 #+end_src
