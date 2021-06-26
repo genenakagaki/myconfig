@@ -41,6 +41,9 @@
     "t SPC" 'org-todo
     "tn" 'gn/next-todo
     "tp" 'org-priority
+    "T" '(:ignore T :which-key "toggle") 
+    "Ti" 'org-toggle-inline-images
+    "Tl" 'org-toggle-link-display
     "s" '(:ignore v :which-key "screen")
     "sl" 'org-toggle-link-display
     "si" 'org-toggle-inline-images
@@ -143,7 +146,7 @@
     
 ** Workflow
 The problem I am facing
-#+begin_src plantuml :tangle no
+#+begin_src plantuml :tangle no :file workflow-overview.png
   @startuml
   title My Workflow
 
@@ -172,6 +175,9 @@ The problem I am facing
   @enduml
 #+end_src
 
+#+RESULTS:
+[[file:workflow-overview.png]]
+
 #+begin_src emacs-lisp :results one
   (defvar gn/inbox-path "~/myworkflow/inbox.org"
     "Path to the inbox file")
@@ -186,7 +192,7 @@ The problem I am facing
     "Path to the incubator file")
 #+end_src
 *** Capture
-#+begin_src plantuml :tangle no
+#+begin_src plantuml :tangle no :file workflow-capture.png
   @startuml
   title Capture
 
@@ -202,6 +208,9 @@ The problem I am facing
   stop
   @enduml
 #+end_src
+
+#+RESULTS:
+[[file:workflow-capture.png]]
 
 #+begin_src emacs-lisp :results none
   (setq org-capture-templates
@@ -223,7 +232,7 @@ The problem I am facing
 #+end_src
 
 *** Clarify
-#+begin_src plantuml :tangle no
+#+begin_src plantuml :tangle no :file workflow-clarify.png
   @startuml
   title Clarify
 
@@ -239,13 +248,14 @@ The problem I am facing
                           :add incubator tag;
                           :add next action:
                           - write down your idea;
+                          stop
                   endif
           else (yes)
                   :Why|
                   :add reference tag;
                   :add next action:
                   - organize reference;
-
+                  stop
           endif
   else (yes)
           if (can complete in under 2 min?) then (no)
@@ -260,21 +270,24 @@ The problem I am facing
                           :add next action:
                           - delegate task;
                   endif
+                  :set priority;
+                  :set due date;
+                  :set scheduled date;
+                  :move to **todo**;
+                  stop
           else (yes)
                   :DO IT NOW!;
                   :delete item;
                   stop
           endif
   endif
-  :set priority;
-  :set due date;
-  :set scheduled date;
-  :move to **todo**;
-  stop
   @enduml
 #+end_src
 
-#+begin_src plantuml :tangle no
+#+RESULTS:
+[[file:workflow-clarify.png]]
+
+#+begin_src plantuml :tangle no :file workflow-why.png
   @startuml
   title Why
 
@@ -290,8 +303,82 @@ The problem I am facing
   @enduml
 #+end_src
 
-#+begin_src emacs-lisp :results none
+#+RESULTS:
+[[file:workflow-why.png]]
 
+#+begin_src emacs-lisp :results none
+  (defun gn/clarify-item ()
+    ""
+    (interactive)
+    (when (not (org-on-heading-p))
+      (error "You need to be on a heading to Clarify an item."))
+    (if (y-or-n-p "It is actionable?")
+        (gn/clarify-actionable-item)
+       (gn/clarify-nonactionable-item))
+    (widen))
+
+  (defun gn/clarify-actionable-item ()
+    ""
+    (interactive)
+    (if (y-or-n-p "Can you complete it in 2 min?")
+        (progn (message "DO IT NOW!")
+               (gn/next-todo)
+               (gn/next-todo))
+      (if (y-or-n-p "Can you delegate it?")
+          (progn (gn/clarify-reason "Why does the task have to be done?")
+                 (org-set-tags ":delegate:")
+                 (gn/insert-subheading "Delegate task")
+                 (gn/next-todo))
+        (progn (gn/clarify-reason "Why does the task have to be done?")
+               (org-set-tags-command)
+               (gn/insert-subheading "Plan task")
+               (gn/next-todo)))))
+
+  (defun gn/clarify-nonactionable-item ()
+    ""
+    (interactive)
+    (if (y-or-n-p "Do you need it for reference?")
+        (gn/clarify-reason "Why do you need it?")
+      (if (y-or-n-p "Is it potentially a future project?")
+          (gn/clarify-reason "Why do you ")
+        ())
+      ()))
+
+  (defun gn/clarify-reason (question)
+    "Prompt for a reason and inserts both question and answer under the heading"
+    (interactive)
+    (->> (read-string question)
+      (concat question "\n- ")
+      (gn/insert-heading-content)))
+
+  (defun gn/insert-heading-content (content)
+    "Insert content under heading"
+    (when (not (org-on-heading-p))
+      (error "You need to be on a heading for this command."))
+    (move-end-of-line 1)
+    (insert (concat "\n" content))
+    (org-previous-visible-heading 1))
+
+  (defun gn/insert-subheading (heading-name)
+    "Insert subheading under current heading"
+    (interactive)
+    (when (not (org-on-heading-p))
+      (error "You need to be on a heading for this command."))
+    (org-narrow-to-subtree)
+    (let ((current-level (org-current-level)))
+      (goto-char (point-max))
+      (-> (+ current-level 1)
+        (-repeat "*")
+        (->> (--reduce (format "%s%s" acc it)))
+        ((lambda (subheading-stars) (concat "\n" subheading-stars " " heading-name)))
+        (insert)))
+    (widen))
+
+  (defun gn/test ()
+    ""
+    (interactive)
+    (gn/insert-subheading "hello")
+    )
 #+end_src
 
 #+begin_src emacs-lisp :results none
@@ -321,12 +408,15 @@ The problem I am facing
     (org-todo (if (org-entry-is-todo-p) 
                   (gn/next-todo-string (gn/current-todo-string))
                 "TODO"))
-    (if (equal (gn/current-todo) "DOING")
+    (if (equal (gn/current-todo-string) "DOING")
         (org-clock-in)
       (org-clock-out)))
 #+end_src
 
-*** Execute
+*** Plan                                                 
+#+begin_src plantuml :results none
+
+#+end_src
 
 ** Agenda
 #+begin_src emacs-lisp :results none

@@ -33,6 +33,9 @@
   "t SPC" 'org-todo
   "tn" 'gn/next-todo
   "tp" 'org-priority
+  "T" '(:ignore T :which-key "toggle") 
+  "Ti" 'org-toggle-inline-images
+  "Tl" 'org-toggle-link-display
   "s" '(:ignore v :which-key "screen")
   "sl" 'org-toggle-link-display
   "si" 'org-toggle-inline-images
@@ -237,8 +240,6 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
             (save-excursion (insert headline)))))
     )
   )
-
-
 
 (require 'ox-html)
 

@@ -294,7 +294,7 @@ Prevent tabs when indenting
 
 *** Org Mode
 #+begin_src emacs-lisp :results none
-  (org-babel-load-file "~/myconfig/emacs/config-org-mode.org")
+  (org-babel-load-file "~/myconfig/emacs/org-mode/config.org")
 #+end_src
 *** Packages
 **** PlantUML
