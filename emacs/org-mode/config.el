@@ -139,6 +139,21 @@
 (defvar gn/incubator-path "~/myworkflow/incubator.org"
   "Path to the incubator file")
 
+(defun gn/workflow-open-todo ()
+  "Open todo file."
+  (interactive)
+  (find-file gn/todo-path))
+
+(defun gn/workflow-open-inbox ()
+  "Open todo file."
+  (interactive)
+  (find-file gn/inbox-path))
+
+(defun gn/workflow-open-reference ()
+  "Open todo file."
+  (interactive)
+  (find-file gn/reference-path))
+
 (setq org-capture-templates
       '(("i" "Inbox" entry (file gn/inbox-path)
          "* %?")
@@ -156,7 +171,80 @@
   [remap save-buffer] 'org-capture-finalize
   [remap kill-current-buffer] 'org-capture-kill)
 
+(defun gn/clarify-item ()
+  ""
+  (interactive)
+  (when (not (org-on-heading-p))
+    (error "You need to be on a heading to Clarify an item."))
+  (if (y-or-n-p "It is actionable?")
+      (gn/clarify-actionable-item)
+     (gn/clarify-nonactionable-item))
+  (widen))
 
+(defun gn/clarify-actionable-item ()
+  ""
+  (interactive)
+  (if (y-or-n-p "Can you complete it in 2 min?")
+      (progn (message "DO IT NOW!")
+             (gn/next-todo)
+             (gn/next-todo))
+    (if (y-or-n-p "Can you delegate it?")
+        (progn (gn/clarify-reason "Why does the task have to be done?")
+               (org-set-tags ":delegate:")
+               (gn/insert-subheading "TODO Delegate task")
+               (org-previous-visible-heading 1)
+               (org-priority))
+      (progn (gn/clarify-reason "Why does the task have to be done?")
+             (org-set-tags-command)
+             (gn/insert-subheading "TODO Plan task")
+             (org-previous-visible-heading 1)
+             (org-priority)))))
+
+(defun gn/clarify-nonactionable-item ()
+  ""
+  (interactive)
+  (if (y-or-n-p "Do you need it for reference?")
+      (gn/clarify-reason "Why do you need it?")
+    (if (y-or-n-p "Is it potentially a future project?")
+        (gn/clarify-reason "Why do you ")
+      ())
+    ()))
+
+(defun gn/clarify-reason (question)
+  "Prompt for a reason and inserts both question and answer under the heading"
+  (interactive)
+  (->> (read-string question)
+    (concat question "\n- ")
+    (gn/insert-heading-content)))
+
+(defun gn/insert-heading-content (content)
+  "Insert content under heading"
+  (when (not (org-on-heading-p))
+    (error "You need to be on a heading for this command."))
+  (move-end-of-line 1)
+  (insert (concat "\n" content))
+  (org-previous-visible-heading 1))
+
+(defun gn/insert-subheading (heading-name)
+  "Insert subheading under current heading"
+  (interactive)
+  (when (not (org-on-heading-p))
+    (error "You need to be on a heading for this command."))
+  (org-narrow-to-subtree)
+  (let ((current-level (org-current-level)))
+    (goto-char (point-max))
+    (-> (+ current-level 1)
+      (-repeat "*")
+      (->> (--reduce (format "%s%s" acc it)))
+      ((lambda (subheading-stars) (concat "\n" subheading-stars " " heading-name)))
+      (insert)))
+  (widen))
+
+(defun gn/test ()
+  ""
+  (interactive)
+  (gn/insert-subheading "hello")
+  )
 
 (setq org-todo-keywords
       '((sequence "TODO" "DOING" "|" "DONE")
@@ -184,9 +272,13 @@
   (org-todo (if (org-entry-is-todo-p) 
                 (gn/next-todo-string (gn/current-todo-string))
               "TODO"))
-  (if (equal (gn/current-todo) "DOING")
+  (if (equal (gn/current-todo-string) "DOING")
       (org-clock-in)
     (org-clock-out)))
+
+(defun gn/current-task ()
+  "Show current task"
+  ())
 
 (evil-set-initial-state 'org-agenda-mode 'normal)
 

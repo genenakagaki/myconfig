@@ -1,3 +1,4 @@
+
 * Org Mode
 #+begin_src emacs-lisp :results none
   (use-package org)
@@ -178,7 +179,7 @@ The problem I am facing
 #+RESULTS:
 [[file:workflow-overview.png]]
 
-#+begin_src emacs-lisp :results one
+#+begin_src emacs-lisp :results none
   (defvar gn/inbox-path "~/myworkflow/inbox.org"
     "Path to the inbox file")
 
@@ -190,7 +191,23 @@ The problem I am facing
 
   (defvar gn/incubator-path "~/myworkflow/incubator.org"
     "Path to the incubator file")
+
+  (defun gn/workflow-open-todo ()
+    "Open todo file."
+    (interactive)
+    (find-file gn/todo-path))
+
+  (defun gn/workflow-open-inbox ()
+    "Open todo file."
+    (interactive)
+    (find-file gn/inbox-path))
+
+  (defun gn/workflow-open-reference ()
+    "Open todo file."
+    (interactive)
+    (find-file gn/reference-path))
 #+end_src
+
 *** Capture
 #+begin_src plantuml :tangle no :file workflow-capture.png
   @startuml
@@ -327,12 +344,14 @@ The problem I am facing
       (if (y-or-n-p "Can you delegate it?")
           (progn (gn/clarify-reason "Why does the task have to be done?")
                  (org-set-tags ":delegate:")
-                 (gn/insert-subheading "Delegate task")
-                 (gn/next-todo))
+                 (gn/insert-subheading "TODO Delegate task")
+                 (org-previous-visible-heading 1)
+                 (org-priority))
         (progn (gn/clarify-reason "Why does the task have to be done?")
                (org-set-tags-command)
-               (gn/insert-subheading "Plan task")
-               (gn/next-todo)))))
+               (gn/insert-subheading "TODO Plan task")
+               (org-previous-visible-heading 1)
+               (org-priority)))))
 
   (defun gn/clarify-nonactionable-item ()
     ""
@@ -414,16 +433,76 @@ The problem I am facing
 #+end_src
 
 *** Plan                                                 
-#+begin_src plantuml :results none
+#+begin_src plantuml :tangle no :file workflow-plan.png 
+  @startuml
+  title Plan
+  start
 
+  if (priority A exists?) then (no)
+          if (priority B exists?) then (no)
+                  if (priority C exists?) then (no)
+                          :get all todos without priority;
+                  else (yes)
+                          :get all priority C todos;
+                  endif
+          else (yes)
+                  :get all priority B todos;
+          endif
+  else (yes)
+          :get all priority A todos;
+  endif
+  :get todo with latest due date;
+  stop
+  @enduml
+#+end_src
+
+#+RESULTS:
+[[file:workflow-plan.png]]
+
+#+begin_src emacs-lisp :results none
+  (defun gn/current-task ()
+    "Show current task"
+    (interactive)
+    (gn/workflow-open-todo)
+    (widen)
+    (goto-char (point-min))
+    (search-forward-regexp "^\* DOING ")
+    (org-narrow-to-subtree))
+
+  (defun gn/current-task-point ()
+    "Returns point of current task"
+    (save-window-excursion
+      (gn/workflow-open-todo)
+      (widen)
+      (goto-char (point-min))
+      (search-forward-regexp "^\* DOING " nil t)
+      (beginning-of-line)
+      (if (eq (point) 1)
+          nil
+        (point))))
+
+  (defun gn/next-task ()
+    ""
+    (interactive)
+    (gn/workflow-open-inbox)
+    (goto-char (point-min))
+    (search-forward-regexp "^\* ")
+  
+    )
+
+  (defun gn/test ()
+    ""
+    (interactive)
+    (message (gn/current-task-point))
+    )
 #+end_src
 
 ** Agenda
 #+begin_src emacs-lisp :results none
-       (evil-set-initial-state 'org-agenda-mode 'normal)
+  (evil-set-initial-state 'org-agenda-mode 'normal)
 
-       (setq org-agenda-files '("~/todo/actions.org"))
-       (setq org-agenda-log-mode-items '(state))
+  (setq org-agenda-files '("~/myworkflow/todo.org"))
+  (setq org-agenda-log-mode-items '(state))
 #+end_src
 
 ** Source Mode

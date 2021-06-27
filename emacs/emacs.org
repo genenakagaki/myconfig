@@ -199,7 +199,14 @@ These have to be at the top of the init.el file
 
     ; Modes
     "m" '(:ignore m :which-key "modes")
-    "mw" 'whitespace-mode)
+    "mw" 'whitespace-mode
+
+    "w" '(:ignore w :which-key "workflow")
+    ;"wc" current-todo
+    "wt" 'gn/workflow-open-todo
+    "wi" 'gn/workflow-open-inbox
+    "wr" 'gn/workflow-open-reference
+    )
 
   (gn/leader-nmap emacs-lisp-mode-map
     "e" 'eval-defun)
