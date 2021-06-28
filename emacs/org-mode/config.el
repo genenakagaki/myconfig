@@ -278,11 +278,43 @@
 
 (defun gn/current-task ()
   "Show current task"
-  ())
+  (interactive)
+  (gn/workflow-open-todo)
+  (widen)
+  (goto-char (point-min))
+  (search-forward-regexp "^\* DOING ")
+  (org-narrow-to-subtree))
+
+(defun gn/current-task-point ()
+  "Returns point of current task"
+  (save-window-excursion
+    (gn/workflow-open-todo)
+    (widen)
+    (goto-char (point-min))
+    (search-forward-regexp "^\* DOING " nil t)
+    (beginning-of-line)
+    (if (eq (point) 1)
+        nil
+      (point))))
+
+(defun gn/next-task ()
+  ""
+  (interactive)
+  (gn/workflow-open-inbox)
+  (goto-char (point-min))
+  (search-forward-regexp "^\* ")
+
+  )
+
+(defun gn/test ()
+  ""
+  (interactive)
+  (message (gn/current-task-point))
+  )
 
 (evil-set-initial-state 'org-agenda-mode 'normal)
 
-(setq org-agenda-files '("~/todo/actions.org"))
+(setq org-agenda-files '("~/myworkflow/todo.org"))
 (setq org-agenda-log-mode-items '(state))
 
 (general-nmap org-src-mode-map

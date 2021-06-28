@@ -463,11 +463,12 @@ The problem I am facing
   (defun gn/current-task ()
     "Show current task"
     (interactive)
-    (gn/workflow-open-todo)
-    (widen)
-    (goto-char (point-min))
-    (search-forward-regexp "^\* DOING ")
-    (org-narrow-to-subtree))
+    (let ((current-task-point (gn/current-task-point)))
+      (if (numberp current-task-point)
+          (progn (gn/workflow-open-todo)
+                 (goto-char (current-task-point))
+                 (org-narrow-to-subtree))
+        (error "Current task not found."))))
 
   (defun gn/current-task-point ()
     "Returns point of current task"
@@ -477,7 +478,7 @@ The problem I am facing
       (goto-char (point-min))
       (search-forward-regexp "^\* DOING " nil t)
       (beginning-of-line)
-      (if (eq (point) 1)
+      (if (eq (point) (point-min))
           nil
         (point))))
 
@@ -487,7 +488,7 @@ The problem I am facing
     (gn/workflow-open-inbox)
     (goto-char (point-min))
     (search-forward-regexp "^\* ")
-  
+
     )
 
   (defun gn/test ()
