@@ -163,7 +163,7 @@ The problem I am facing
                   :Engage|
           repeat while (still working?) is (yes)
           ->no;
-  fork again
+          fork again
           repeat  
                   :await new information;
                   :Capture|
@@ -248,91 +248,124 @@ The problem I am facing
     [remap kill-current-buffer] 'org-capture-kill)
 #+end_src
 
-*** Clarify
-#+begin_src plantuml :tangle no :file workflow-clarify.png
+*** Process Inbox Item
+#+begin_src plantuml :tangle no :file workflow-process-inbox-item.png
   @startuml
-  title Clarify
-
+  title Process Inbox Item
   start
   :item in **inbox**/
-  if (actionable?) then (no)
-          if (need it for reference?) then (no)
-                  if (potentially a future project?) then (no)
-                          :delete item;
-                          stop
-                  else (yes)
-                          :Why|
-                          :add incubator tag;
-                          :add next action:
-                          - write down your idea;
-                          stop
-                  endif
-          else (yes)
-                  :Why|
-                  :add reference tag;
-                  :add next action:
-                  - organize reference;
-                  stop
-          endif
-  else (yes)
-          if (can complete in under 2 min?) then (no)
-                  if (can delegate?) then (no)
-                          :Why|
-                          :add relevant tag;
-                          :add next action:
-                          - plan task;
-                  else (yes)
-                          :Why|
-                          :add delegate tag;
-                          :add next action:
-                          - delegate task;
-                  endif
-                  :set priority;
-                  :set due date;
-                  :set scheduled date;
-                  :move to **todo**;
-                  stop
+
+
+  partition "Clarify item" {
+          if (is task that can be completed in 2 min?) then (no)
           else (yes)
                   :DO IT NOW!;
-                  :delete item;
+                  :archive item;
                   stop
           endif
-  endif
+
+          if (is related to project?) then (no)
+          else (yes)
+                  :Add project name tag;
+          endif
+
+          if (project issue?) then (yes) 
+                  :Add :project_issue: tag;
+                  if (can delegate?) then (no)
+                          :Add tasks
+                          - plan task;
+                  else (yes)
+                          :Add :delegate: tag;
+                          :Add task
+                          - write delegatee
+                          - delegate task;
+                  endif
+                  :Write why the issue needs to be addressed;
+          elseif (meeting?) then (yes)
+                  :Add :meeting: tag;
+                  :Add tasks
+                  - prepare for meeting;
+                  :Write what the meeting is about;
+          elseif (reference?) then (yes)
+                  :Add :reference: tag;
+                  :Add tasks
+                  - organize reference
+                  - add entry to **reference** file;
+                  :Write why you need it for reference;
+          elseif (future project?) then (yes)
+                  :Add :incubator: tag;
+                  :Add tasks
+                  - write down your project idea
+                  - add entry to **incubator** file;
+                  :Write how it might be a future project;
+          else
+                  :archive item;
+                  stop
+          endif
+  }
+
+  partition "Organize item" {
+          if (needs to be done ASAP?) then (yes)
+                  :Add priority #A;
+          elseif (should be prioritized?) then (yes)
+                  :Add priority #B;
+          elseif (should be done on spare time?) then (yes)
+                  :Do not add priority;
+          else (no)
+                  :Add priority #C;
+          endif
+
+          if (due date exists?) then (no)
+          else (yes)
+                  :Set due date;
+          endif
+
+          :move item to **todo**;
+  }
+  stop
   @enduml
 #+end_src
-
-#+RESULTS:
-[[file:workflow-clarify.png]]
-
-#+begin_src plantuml :tangle no :file workflow-why.png
-  @startuml
-  title Why
-
-  start
-  :todo item/
-  if (reason exists?) then (no)
-          :delete item;
-          stop
-  else (yes)
-          :write down why;
-          stop
-  endif
-  @enduml
-#+end_src
-
-#+RESULTS:
-[[file:workflow-why.png]]
 
 #+begin_src emacs-lisp :results none
-  (defun gn/clarify-item ()
-    ""
+  (defvar gn/task-type
+    '(name ))
+
+  (defun gn/clarify-project-issue ()
+    "Clarify project_issue task type"
+    (org-set-tag "project_issue")
+    (if (y-or-n-p "Can you delegate it?")
+        (progn )
+      (gn/insert-subheading "TODO "))
+    (gn/insert-subheading "TODO ")
+    (gn/insert-heading-content "Why this issue needs to be addressed:"))
+
+  (defvar gn/task-type-project-issue-plist
+    '(tag-name "project_issue"
+               clarify-function 'gn/clarify-project-issue))
+
+  (defun gn/clarify-inbox-item ()
+    "Clarify item"
     (interactive)
     (when (not (org-on-heading-p))
       (error "You need to be on a heading to Clarify an item."))
+
+    (if (y-or-n-p "Is item a task you can complete in 2 min?")
+        (message "DO IT NOW!")
+      (progn
+        (when (y-or-n-p "Is item related to a project?")
+          (org-set-tags-command))
+        (ivy-read "Choose type of item: " '("project_issue" ""))
+        ))
+
     (if (y-or-n-p "It is actionable?")
         (gn/clarify-actionable-item)
        (gn/clarify-nonactionable-item))
     (widen))
+
+  (defun gn/test ()
+    (interactive)
+    (message (ivy-read "Choose one" '("hello" "aa") :require-match t)))
+
 
   (defun gn/clarify-actionable-item ()
     ""
@@ -393,10 +426,23 @@ The problem I am facing
         (insert)))
     (widen))
 
+  (defun gn/add-task (task-name)
+    ""
+    (interactive)
+    (when (org-before-first-heading-p)
+      (error "You need to be in or at a heading"))
+
+    (org-get-heading)
+
+    (gn/insert-subheading)
+
+
+    )
+
   (defun gn/test ()
     ""
     (interactive)
-    (gn/insert-subheading "hello")
+    (message (buffer-file-name))
     )
 #+end_src
 
@@ -497,6 +543,7 @@ The problem I am facing
     (message (gn/current-task-point))
     )
 #+end_src
+
 
 ** Agenda
 #+begin_src emacs-lisp :results none
