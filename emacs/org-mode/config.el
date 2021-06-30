@@ -130,8 +130,8 @@
 (defvar gn/inbox-path "~/myworkflow/inbox.org"
   "Path to the inbox file")
 
-(defvar gn/todo-path "~/myworkflow/todo.org"
-  "Path to the todo file")
+(defvar gn/tasks-path "~/myworkflow/tasks.org"
+  "Path to the tasks file")
 
 (defvar gn/reference-path "~/myworkflow/reference.org"
   "Path to the reference file")
@@ -139,18 +139,18 @@
 (defvar gn/incubator-path "~/myworkflow/incubator.org"
   "Path to the incubator file")
 
-(defun gn/workflow-open-todo ()
-  "Open todo file."
+(defun gn/workflow-open-tasks ()
+  "Open tasks file."
   (interactive)
-  (find-file gn/todo-path))
+  (find-file gn/tasks-path))
 
 (defun gn/workflow-open-inbox ()
-  "Open todo file."
+  "Open inbox file."
   (interactive)
   (find-file gn/inbox-path))
 
 (defun gn/workflow-open-reference ()
-  "Open todo file."
+  "Open reference file."
   (interactive)
   (find-file gn/reference-path))
 
@@ -163,7 +163,7 @@
 
 (setq org-refile-targets
       '((gn/inbox-path :level . 0)
-        (gn/todo-path :level . 0)
+        (gn/tasks-path :level . 0)
         (gn/reference-path :level . 0)
         (gn/incubator-path :level . 0)))
 
@@ -171,14 +171,81 @@
   [remap save-buffer] 'org-capture-finalize
   [remap kill-current-buffer] 'org-capture-kill)
 
-(defun gn/clarify-item ()
+(defun gntodo/add-todo (todo-name)
   ""
+  (save-excursion
+    (org-insert-todo-heading-respect-content)
+    (gn/org-demote)
+    (insert todo-name)
+    ))
+
+(defun gntodo/clarify-project-issue ()
+  "Clarify project_issue task type"
+  (org-set-tags "project_issue")
+  (if (y-or-n-p "Can you delegate it?")
+      (progn (org-set-tags "delegate")
+             (gntodo/add-todo "Write down delegatee")
+             (gntodo/add-todo "Delegate task"))
+    (gntodo/add-todo "Plan task"))
+  (gn/insert-heading-content "Why this issue needs to be addressed:
+- "))
+
+(defun gntodo/clarify-meeting ()
+  "Clarify meeting task type"
+  (org-set-tags "meeting")
+  (gntodo/add-todo "Prepare for meeting")
+  (gn/insert-heading-content "What this meeting is about:
+- "))
+
+(defun gntodo/clarify-reference ()
+  "Clarify reference task type"
+  (org-set-tags "reference")
+  (gntodo/add-todo "Organize reference")
+  (gntodo/add-todo "Add entry to reference file")
+  (gn/insert-heading-content "Why this reference is needed:
+- "))
+
+(defun gntodo/clarify-future-project ()
+  "Clarify future_project task type"
+  (org-set-tags "future_project")
+  (gntodo/add-todo "Write down project idea")
+  (gntodo/add-todo "Add entry to incubator file")
+  (gn/insert-heading-content "How this might be a future project:
+- "))
+
+(defvar gntodo/task-type
+  '((tag-name "project_issue"
+               clarify-function gntodo/clarify-project-issue)
+    (tag-name "meeting"
+               clarify-function gntodo/clarify-meeting)
+    (tag-name "reference"
+               clarify-function gntodo/clarify-reference)
+    (tag-name "future_project"
+               clarify-function gntodo/clarify-future-project)
+    ))
+
+(defun gntodo/clarify-inbox-item ()
+  "Clarify item"
   (interactive)
   (when (not (org-on-heading-p))
     (error "You need to be on a heading to Clarify an item."))
-  (if (y-or-n-p "It is actionable?")
-      (gn/clarify-actionable-item)
-     (gn/clarify-nonactionable-item))
+
+  (if (y-or-n-p "Is item a task you can complete in 2 min?")
+      (message "DO IT NOW!")
+    (progn
+      (when (y-or-n-p "Is item related to a project?")
+        (org-set-tags-command))
+      (->> gntodo/task-type
+           (--map (plist-get it 'tag-name))
+           (ivy-read "Choose type of item: ") 
+           ((lambda (chosen-tag-name) 
+              (-> gntodo/task-type
+                  (->> (--first (string= chosen-tag-name (plist-get it 'tag-name))))
+                  (plist-get 'clarify-function)
+                  (funcall)
+                  )))
+           )
+      ))
   (widen))
 
 (defun gn/clarify-actionable-item ()
@@ -222,8 +289,7 @@
   (when (not (org-on-heading-p))
     (error "You need to be on a heading for this command."))
   (move-end-of-line 1)
-  (insert (concat "\n" content))
-  (org-previous-visible-heading 1))
+  (insert (concat "\n" content)))
 
 (defun gn/insert-subheading (heading-name)
   "Insert subheading under current heading"
@@ -240,11 +306,11 @@
       (insert)))
   (widen))
 
-(defun gn/test ()
-  ""
+
+(defun gnorg/goto-toplevel-heading ()
+  "Go to toplevel heading"
   (interactive)
-  (gn/insert-subheading "hello")
-  )
+  (outline-heading 100))
 
 (setq org-todo-keywords
       '((sequence "TODO" "DOING" "|" "DONE")
@@ -279,11 +345,12 @@
 (defun gn/current-task ()
   "Show current task"
   (interactive)
-  (gn/workflow-open-todo)
-  (widen)
-  (goto-char (point-min))
-  (search-forward-regexp "^\* DOING ")
-  (org-narrow-to-subtree))
+  (let ((current-task-point (gn/current-task-point)))
+    (if (numberp current-task-point)
+        (progn (gn/workflow-open-todo)
+               (goto-char (current-task-point))
+               (org-narrow-to-subtree))
+      (error "Current task not found."))))
 
 (defun gn/current-task-point ()
   "Returns point of current task"
@@ -293,7 +360,7 @@
     (goto-char (point-min))
     (search-forward-regexp "^\* DOING " nil t)
     (beginning-of-line)
-    (if (eq (point) 1)
+    (if (eq (point) (point-min))
         nil
       (point))))
 
@@ -304,12 +371,6 @@
   (goto-char (point-min))
   (search-forward-regexp "^\* ")
 
-  )
-
-(defun gn/test ()
-  ""
-  (interactive)
-  (message (gn/current-task-point))
   )
 
 (evil-set-initial-state 'org-agenda-mode 'normal)

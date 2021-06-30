@@ -1,3 +1,4 @@
+#+PROPERTY: header-args :tangle ~/myconfig/emacs/org-mode/config.el
 
 * Org Mode
 #+begin_src emacs-lisp :results none
@@ -145,6 +146,7 @@
 
 #+end_src
     
+
 ** Workflow
 The problem I am facing
 #+begin_src plantuml :tangle no :file workflow-overview.png
@@ -183,8 +185,8 @@ The problem I am facing
   (defvar gn/inbox-path "~/myworkflow/inbox.org"
     "Path to the inbox file")
 
-  (defvar gn/todo-path "~/myworkflow/todo.org"
-    "Path to the todo file")
+  (defvar gn/tasks-path "~/myworkflow/tasks.org"
+    "Path to the tasks file")
 
   (defvar gn/reference-path "~/myworkflow/reference.org"
     "Path to the reference file")
@@ -192,18 +194,18 @@ The problem I am facing
   (defvar gn/incubator-path "~/myworkflow/incubator.org"
     "Path to the incubator file")
 
-  (defun gn/workflow-open-todo ()
-    "Open todo file."
+  (defun gn/workflow-open-tasks ()
+    "Open tasks file."
     (interactive)
-    (find-file gn/todo-path))
+    (find-file gn/tasks-path))
 
   (defun gn/workflow-open-inbox ()
-    "Open todo file."
+    "Open inbox file."
     (interactive)
     (find-file gn/inbox-path))
 
   (defun gn/workflow-open-reference ()
-    "Open todo file."
+    "Open reference file."
     (interactive)
     (find-file gn/reference-path))
 #+end_src
@@ -239,7 +241,7 @@ The problem I am facing
 
   (setq org-refile-targets
         '((gn/inbox-path :level . 0)
-          (gn/todo-path :level . 0)
+          (gn/tasks-path :level . 0)
           (gn/reference-path :level . 0)
           (gn/incubator-path :level . 0)))
 
@@ -293,7 +295,7 @@ The problem I am facing
                   - add entry to **reference** file;
                   :Write why you need it for reference;
           elseif (future project?) then (yes)
-                  :Add :incubator: tag;
+                  :Add :egg: tag;
                   :Add tasks
                   - write down your project idea
                   - add entry to **incubator** file;
@@ -320,30 +322,67 @@ The problem I am facing
                   :Set due date;
           endif
 
-          :move item to **todo**;
+          :move item to **tasks**;
   }
   stop
   @enduml
 #+end_src
 
 #+begin_src emacs-lisp :results none
-  (defvar gn/task-type
-    '(name ))
+  (defun gntodo/add-todo (todo-name)
+    ""
+    (save-excursion
+      (org-insert-todo-heading-respect-content)
+      (gn/org-demote)
+      (insert todo-name)
+      ))
 
-  (defun gn/clarify-project-issue ()
+  (defun gntodo/clarify-project-issue ()
     "Clarify project_issue task type"
-    (org-set-tag "project_issue")
+    (org-set-tags "project_issue")
     (if (y-or-n-p "Can you delegate it?")
-        (progn )
-      (gn/insert-subheading "TODO "))
-    (gn/insert-subheading "TODO ")
-    (gn/insert-heading-content "Why this issue needs to be addressed:"))
+        (progn (org-set-tags "delegate")
+               (gntodo/add-todo "Write down delegatee")
+               (gntodo/add-todo "Delegate task"))
+      (gntodo/add-todo "Plan task"))
+    (gn/insert-heading-content "Why this issue needs to be addressed:
+  - "))
 
-  (defvar gn/task-type-project-issue-plist
-    '(tag-name "project_issue"
-               clarify-function 'gn/clarify-project-issue))
+  (defun gntodo/clarify-meeting ()
+    "Clarify meeting task type"
+    (org-set-tags "meeting")
+    (gntodo/add-todo "Prepare for meeting")
+    (gn/insert-heading-content "What this meeting is about:
+  - "))
 
-  (defun gn/clarify-inbox-item ()
+  (defun gntodo/clarify-reference ()
+    "Clarify reference task type"
+    (org-set-tags "reference")
+    (gntodo/add-todo "Organize reference")
+    (gntodo/add-todo "Add entry to reference file")
+    (gn/insert-heading-content "Why this reference is needed:
+  - "))
+
+  (defun gntodo/clarify-future-project ()
+    "Clarify future_project task type"
+    (org-set-tags "future_project")
+    (gntodo/add-todo "Write down project idea")
+    (gntodo/add-todo "Add entry to incubator file")
+    (gn/insert-heading-content "How this might be a future project:
+  - "))
+
+  (defvar gntodo/task-type
+    '((tag-name "project_issue"
+                 clarify-function gntodo/clarify-project-issue)
+      (tag-name "meeting"
+                 clarify-function gntodo/clarify-meeting)
+      (tag-name "reference"
+                 clarify-function gntodo/clarify-reference)
+      (tag-name "future_project"
+                 clarify-function gntodo/clarify-future-project)
+      ))
+
+  (defun gntodo/clarify-inbox-item ()
     "Clarify item"
     (interactive)
     (when (not (org-on-heading-p))
@@ -354,18 +393,18 @@ The problem I am facing
       (progn
         (when (y-or-n-p "Is item related to a project?")
           (org-set-tags-command))
-        (ivy-read "Choose type of item: " '("project_issue" ""))
+        (->> gntodo/task-type
+             (--map (plist-get it 'tag-name))
+             (ivy-read "Choose type of item: ") 
+             ((lambda (chosen-tag-name) 
+                (-> gntodo/task-type
+                    (->> (--first (string= chosen-tag-name (plist-get it 'tag-name))))
+                    (plist-get 'clarify-function)
+                    (funcall)
+                    )))
+             )
         ))
-
-    (if (y-or-n-p "It is actionable?")
-        (gn/clarify-actionable-item)
-       (gn/clarify-nonactionable-item))
     (widen))
-
-  (defun gn/test ()
-    (interactive)
-    (message (ivy-read "Choose one" '("hello" "aa") :require-match t)))
-
 
   (defun gn/clarify-actionable-item ()
     ""
@@ -408,8 +447,7 @@ The problem I am facing
     (when (not (org-on-heading-p))
       (error "You need to be on a heading for this command."))
     (move-end-of-line 1)
-    (insert (concat "\n" content))
-    (org-previous-visible-heading 1))
+    (insert (concat "\n" content)))
 
   (defun gn/insert-subheading (heading-name)
     "Insert subheading under current heading"
@@ -426,24 +464,11 @@ The problem I am facing
         (insert)))
     (widen))
 
-  (defun gn/add-task (task-name)
-    ""
+
+  (defun gnorg/goto-toplevel-heading ()
+    "Go to toplevel heading"
     (interactive)
-    (when (org-before-first-heading-p)
-      (error "You need to be in or at a heading"))
-
-    (org-get-heading)
-
-    (gn/insert-subheading)
-
-
-    )
-
-  (defun gn/test ()
-    ""
-    (interactive)
-    (message (buffer-file-name))
-    )
+    (outline-heading 100))
 #+end_src
 
 #+begin_src emacs-lisp :results none
@@ -478,7 +503,8 @@ The problem I am facing
       (org-clock-out)))
 #+end_src
 
-*** Plan                                                 
+
+*** Plan
 #+begin_src plantuml :tangle no :file workflow-plan.png 
   @startuml
   title Plan
@@ -536,14 +562,7 @@ The problem I am facing
     (search-forward-regexp "^\* ")
 
     )
-
-  (defun gn/test ()
-    ""
-    (interactive)
-    (message (gn/current-task-point))
-    )
 #+end_src
-
 
 ** Agenda
 #+begin_src emacs-lisp :results none
