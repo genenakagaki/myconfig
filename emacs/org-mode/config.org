@@ -41,7 +41,7 @@
     "yl" 'org-store-link
     "t" '(:ignore t :which-key "todo")
     "t SPC" 'org-todo
-    "tn" 'gn/next-todo
+    "tn" 'gntodo/next-todo
     "tp" 'org-priority
     "T" '(:ignore T :which-key "toggle") 
     "Ti" 'org-toggle-inline-images
@@ -147,11 +147,11 @@
 #+end_src
     
 
-** Workflow
+** MyTodo
 The problem I am facing
-#+begin_src plantuml :tangle no :file workflow-overview.png
+#+begin_src plantuml :tangle no :file mytodo-overview.png
   @startuml
-  title My Workflow
+  title My Todo
 
   start
   :Start working;
@@ -178,40 +178,37 @@ The problem I am facing
   @enduml
 #+end_src
 
-#+RESULTS:
-[[file:workflow-overview.png]]
-
 #+begin_src emacs-lisp :results none
-  (defvar gn/inbox-path "~/myworkflow/inbox.org"
+  (defvar gntodo/inbox-path "~/mytodo/inbox.org"
     "Path to the inbox file")
 
-  (defvar gn/tasks-path "~/myworkflow/tasks.org"
+  (defvar gntodo/tasks-path "~/mytodo/tasks.org"
     "Path to the tasks file")
 
-  (defvar gn/reference-path "~/myworkflow/reference.org"
+  (defvar gntodo/reference-path "~/mytodo/reference.org"
     "Path to the reference file")
 
-  (defvar gn/incubator-path "~/myworkflow/incubator.org"
+  (defvar gntodo/incubator-path "~/mytodo/incubator.org"
     "Path to the incubator file")
 
-  (defun gn/workflow-open-tasks ()
+  (defun gntodo/open-tasks ()
     "Open tasks file."
     (interactive)
     (find-file gn/tasks-path))
 
-  (defun gn/workflow-open-inbox ()
+  (defun gntodo/open-inbox ()
     "Open inbox file."
     (interactive)
     (find-file gn/inbox-path))
 
-  (defun gn/workflow-open-reference ()
+  (defun gntodo/open-reference ()
     "Open reference file."
     (interactive)
     (find-file gn/reference-path))
 #+end_src
 
 *** Capture
-#+begin_src plantuml :tangle no :file workflow-capture.png
+#+begin_src plantuml :tangle no :file todo-capture.png
   @startuml
   title Capture
 
@@ -227,9 +224,6 @@ The problem I am facing
   stop
   @enduml
 #+end_src
-
-#+RESULTS:
-[[file:workflow-capture.png]]
 
 #+begin_src emacs-lisp :results none
   (setq org-capture-templates
@@ -251,7 +245,7 @@ The problem I am facing
 #+end_src
 
 *** Process Inbox Item
-#+begin_src plantuml :tangle no :file workflow-process-inbox-item.png
+#+begin_src plantuml :tangle no :file mytodo-process-inbox-item.png
   @startuml
   title Process Inbox Item
   start
@@ -411,8 +405,8 @@ The problem I am facing
     (interactive)
     (if (y-or-n-p "Can you complete it in 2 min?")
         (progn (message "DO IT NOW!")
-               (gn/next-todo)
-               (gn/next-todo))
+               (gntodo/next-todo)
+               (gntodo/next-todo))
       (if (y-or-n-p "Can you delegate it?")
           (progn (gn/clarify-reason "Why does the task have to be done?")
                  (org-set-tags ":delegate:")
@@ -476,7 +470,7 @@ The problem I am facing
         '((sequence "TODO" "DOING" "|" "DONE")
           (sequence "ON-HOLD(o)" "SCHEDULED(s)" "WAITING(w)" "CANCELLED(c)")))
 
-  (defun gn/next-todo-string (current-todo)
+  (defun gntodo/next-todo-string (current-todo)
     "Returns next todo"
     (cond ((or (equal current-todo "TODO")
                (equal current-todo "ON-HOLD")
@@ -486,26 +480,26 @@ The problem I am facing
           ((equal current-todo "DOING")
            "DONE")))
 
-  (defun gn/current-todo-string ()
+  (defun gntodo/current-todo-string ()
     (if (org-entry-is-todo-p)
         (-> (org-get-todo-state)
           substring-no-properties)
       nil))
 
-  (defun gn/next-todo ()
+  (defun gntodo/next-todo ()
     "Toggle TODO states"
     (interactive)
     (org-todo (if (org-entry-is-todo-p) 
-                  (gn/next-todo-string (gn/current-todo-string))
+                  (gntodo/next-todo-string (gntodo/current-todo-string))
                 "TODO"))
-    (if (equal (gn/current-todo-string) "DOING")
+    (if (equal (gntodo/current-todo-string) "DOING")
         (org-clock-in)
       (org-clock-out)))
 #+end_src
 
 
 *** Plan
-#+begin_src plantuml :tangle no :file workflow-plan.png 
+#+begin_src plantuml :tangle no :file mytodo-plan.png 
   @startuml
   title Plan
   start
@@ -528,16 +522,13 @@ The problem I am facing
   @enduml
 #+end_src
 
-#+RESULTS:
-[[file:workflow-plan.png]]
-
 #+begin_src emacs-lisp :results none
-  (defun gn/current-task ()
+  (defun gntodo/current-task ()
     "Show current task"
     (interactive)
     (let ((current-task-point (gn/current-task-point)))
       (if (numberp current-task-point)
-          (progn (gn/workflow-open-todo)
+          (progn (gntodo/open-todo)
                  (goto-char (current-task-point))
                  (org-narrow-to-subtree))
         (error "Current task not found."))))
@@ -545,7 +536,7 @@ The problem I am facing
   (defun gn/current-task-point ()
     "Returns point of current task"
     (save-window-excursion
-      (gn/workflow-open-todo)
+      (gntodo/open-tasks)
       (widen)
       (goto-char (point-min))
       (search-forward-regexp "^\* DOING " nil t)
@@ -557,7 +548,7 @@ The problem I am facing
   (defun gn/next-task ()
     ""
     (interactive)
-    (gn/workflow-open-inbox)
+    (gntodo/open-inbox)
     (goto-char (point-min))
     (search-forward-regexp "^\* ")
 
@@ -568,7 +559,7 @@ The problem I am facing
 #+begin_src emacs-lisp :results none
   (evil-set-initial-state 'org-agenda-mode 'normal)
 
-  (setq org-agenda-files '("~/myworkflow/todo.org"))
+  (setq org-agenda-files '("~/mytodo/tasks.org"))
   (setq org-agenda-log-mode-items '(state))
 #+end_src
 
@@ -584,7 +575,7 @@ The problem I am facing
 #+end_src
 ** Template
 #+begin_src emacs-lisp :results none
-       (defvar gn/org-template-path "~/todo/templates.org")
+       (defvar gn/org-template-path "~/mytodo/templates.org")
 
        (defun gn/org-template ()
          ""
