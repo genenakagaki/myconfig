@@ -11,7 +11,7 @@
 
 (gn/leader-nvmap org-mode-map
   "e" 'org-ctrl-c-ctrl-c
-  "bb" 'gn/org-open-scope
+  "bb" 'gnorg/open-scope
   )
 
 (gn/leader-nmap org-mode-map
@@ -23,37 +23,38 @@
   "ids" 'org-schedule
   "il" 'org-insert-link
   "ii" 'org-id-get-create
-  "it" 'org-insert-structure-template
-  "iT" 'gn/org-insert-template
+  "ib" '(org-insert-structure-template "insert code block")
+  "it" 'counsel-org-tag
+  "iT" 'gnorg/insert-template
   "D" 'org-cut-subtree
   "y" '(:ignore y :which-key "yank")
   "yi" 'org-id-copy
   "yl" 'org-store-link
   "t" '(:ignore t :which-key "todo")
   "t SPC" 'org-todo
-  "tn" 'gn/next-todo
+  "tn" 'gntodo/next-todo
   "tp" 'org-priority
   "T" '(:ignore T :which-key "toggle") 
   "Ti" 'org-toggle-inline-images
   "Tl" 'org-toggle-link-display
-  "s" '(:ignore v :which-key "screen")
-  "sl" 'org-toggle-link-display
-  "si" 'org-toggle-inline-images
   "s" '(:ignore s :which-key "src")
   "st" 'org-babel-tangle
+  "n" '(:ignore n :which-key "narrowing")
+  "nn" 'org-narrow-to-subtree
+  "nw" 'widen
   "/" 'org-sparse-tree
   )
 
 (general-define-key
  :states '(normal visual insert)
  :keymaps 'org-mode-map
- "C-<return>" 'gn/org-insert-new-item
- "C-h" 'gn/org-promote-tree
- "C-S-h" 'gn/org-promote
- "C-j" 'gn/org-move-tree-down
- "C-k" 'gn/org-move-tree-up
- "C-l" 'gn/org-demote-tree
- "C-S-l" 'gn/org-demote
+ "C-<return>" 'gnorg/insert-new-item
+ "C-h" 'gnorg/promote-tree
+ "C-S-h" 'gnorg/promote
+ "C-j" 'gnorg/move-tree-down
+ "C-k" 'gnorg/move-tree-up
+ "C-l" 'gnorg/demote-tree
+ "C-S-l" 'gnorg/demote
  )
 
 (general-nvmap
@@ -61,9 +62,9 @@
   "J" 'org-next-visible-heading
   "K" 'org-previous-visible-heading)
 
-(define-minor-mode gn/org-movement-mode
+(define-minor-mode gnorg/movement-mode
   "Minor mode for org movements"
-  :lighter " gn/org-movement"
+  :lighter " gnorg/movement"
   )
 
 ;(general-nvmap org-mode-map
@@ -71,7 +72,7 @@
 ;  "C-j" 'org-next-visible-heading
 ;  )
 
-(defun gn/org-insert-new-item ()
+(defun gnorg/insert-new-item ()
   "Inserts a new item (headings, checkboxes, or bullets)"
   (interactive)
   (evil-append-line 0)
@@ -79,244 +80,86 @@
         ((org-at-item-checkbox-p) (org-insert-todo-heading nil))
         ((org-at-item-p) (org-insert-item))))
 
-(defun gn/org-promote ()
+(defun gnorg/promote ()
   "Moves item position (headings, checkboxes, or bullets)"
   (interactive)
   (cond ((org-at-heading-p) (org-do-promote))
         ((org-at-item-p) (org-outdent-item))))
 
-(defun gn/org-promote-tree ()
+(defun gnorg/promote-tree ()
   "Moves item position (headings, checkboxes, or bullets)"
   (interactive)
   (cond ((org-at-heading-p) (org-promote-subtree))
         ((org-at-item-p) (org-outdent-item-tree))))
 
-(defun gn/org-demote ()
+(defun gnorg/demote ()
   "Demotes item (headings, lists)"
   (interactive)
   (cond ((org-at-heading-p) (org-do-demote))
         ((org-at-item-p) (org-indent-item))))
 
-(defun gn/org-demote-tree ()
+(defun gnorg/demote-tree ()
   "Demotes item (headings, lists)"
   (interactive)
   (cond ((org-at-heading-p) (org-demote-subtree))
         ((org-at-item-p) (org-indent-item-tree))))
 
-(defun gn/org-demote-tree ()
+(defun gnorg/demote-tree ()
   "Demotes item (headings, lists)"
   (interactive)
   (cond ((org-at-heading-p) (org-demote-subtree))
         ((org-at-item-p) (org-indent-item-tree))))
 
-(defun gn/org-move-tree-up ()
+(defun gnorg/move-tree-up ()
   "Moves item up (headings, lists)"
   (interactive)
   (cond ((org-at-heading-p) (org-move-subtree-up))
         ((org-at-item-p) (org-move-item-up))))
 
-(defun gn/org-move-tree-down ()
+(defun gnorg/move-tree-down ()
   "Moves item down (headings, lists)"
   (interactive)
   (cond ((org-at-heading-p) (org-move-subtree-down))
         ((org-at-item-p) (org-move-item-down))))
 
-(defun gn/org-open-scope ()
+(defun gnorg/open-scope ()
   "Open subtree or block in new buffer"
   (interactive)
   (cond ((org-in-src-block-p) (org-edit-special))
         ((org-at-heading-p) (org-tree-to-indirect-buffer))))
 
-(defvar gn/inbox-path "~/myworkflow/inbox.org"
+(defvar gntodo/inbox-path "~/mytodo/inbox.org"
   "Path to the inbox file")
 
-(defvar gn/tasks-path "~/myworkflow/tasks.org"
+(defvar gntodo/tasks-path "~/mytodo/tasks.org"
   "Path to the tasks file")
 
-(defvar gn/reference-path "~/myworkflow/reference.org"
+(defvar gntodo/reference-path "~/mytodo/reference.org"
   "Path to the reference file")
 
-(defvar gn/incubator-path "~/myworkflow/incubator.org"
+(defvar gntodo/incubator-path "~/mytodo/incubator.org"
   "Path to the incubator file")
 
-(defun gn/workflow-open-tasks ()
+(defun gntodo/open-tasks ()
   "Open tasks file."
   (interactive)
-  (find-file gn/tasks-path))
+  (find-file gntodo/tasks-path))
 
-(defun gn/workflow-open-inbox ()
+(defun gntodo/open-inbox ()
   "Open inbox file."
   (interactive)
-  (find-file gn/inbox-path))
+  (find-file gntodo/inbox-path))
 
-(defun gn/workflow-open-reference ()
+(defun gntodo/open-reference ()
   "Open reference file."
   (interactive)
-  (find-file gn/reference-path))
-
-(setq org-capture-templates
-      '(("i" "Inbox" entry (file gn/inbox-path)
-         "* %?")
-        ))
-
-(setq org-refile-use-outline-path 'file)
-
-(setq org-refile-targets
-      '((gn/inbox-path :level . 0)
-        (gn/tasks-path :level . 0)
-        (gn/reference-path :level . 0)
-        (gn/incubator-path :level . 0)))
-
-(general-nmap org-capture-mode-map
-  [remap save-buffer] 'org-capture-finalize
-  [remap kill-current-buffer] 'org-capture-kill)
-
-(defun gntodo/add-todo (todo-name)
-  ""
-  (save-excursion
-    (org-insert-todo-heading-respect-content)
-    (gn/org-demote)
-    (insert todo-name)
-    ))
-
-(defun gntodo/clarify-project-issue ()
-  "Clarify project_issue task type"
-  (org-set-tags "project_issue")
-  (if (y-or-n-p "Can you delegate it?")
-      (progn (org-set-tags "delegate")
-             (gntodo/add-todo "Write down delegatee")
-             (gntodo/add-todo "Delegate task"))
-    (gntodo/add-todo "Plan task"))
-  (gn/insert-heading-content "Why this issue needs to be addressed:
-- "))
-
-(defun gntodo/clarify-meeting ()
-  "Clarify meeting task type"
-  (org-set-tags "meeting")
-  (gntodo/add-todo "Prepare for meeting")
-  (gn/insert-heading-content "What this meeting is about:
-- "))
-
-(defun gntodo/clarify-reference ()
-  "Clarify reference task type"
-  (org-set-tags "reference")
-  (gntodo/add-todo "Organize reference")
-  (gntodo/add-todo "Add entry to reference file")
-  (gn/insert-heading-content "Why this reference is needed:
-- "))
-
-(defun gntodo/clarify-future-project ()
-  "Clarify future_project task type"
-  (org-set-tags "future_project")
-  (gntodo/add-todo "Write down project idea")
-  (gntodo/add-todo "Add entry to incubator file")
-  (gn/insert-heading-content "How this might be a future project:
-- "))
-
-(defvar gntodo/task-type
-  '((tag-name "project_issue"
-               clarify-function gntodo/clarify-project-issue)
-    (tag-name "meeting"
-               clarify-function gntodo/clarify-meeting)
-    (tag-name "reference"
-               clarify-function gntodo/clarify-reference)
-    (tag-name "future_project"
-               clarify-function gntodo/clarify-future-project)
-    ))
-
-(defun gntodo/clarify-inbox-item ()
-  "Clarify item"
-  (interactive)
-  (when (not (org-on-heading-p))
-    (error "You need to be on a heading to Clarify an item."))
-
-  (if (y-or-n-p "Is item a task you can complete in 2 min?")
-      (message "DO IT NOW!")
-    (progn
-      (when (y-or-n-p "Is item related to a project?")
-        (org-set-tags-command))
-      (->> gntodo/task-type
-           (--map (plist-get it 'tag-name))
-           (ivy-read "Choose type of item: ") 
-           ((lambda (chosen-tag-name) 
-              (-> gntodo/task-type
-                  (->> (--first (string= chosen-tag-name (plist-get it 'tag-name))))
-                  (plist-get 'clarify-function)
-                  (funcall)
-                  )))
-           )
-      ))
-  (widen))
-
-(defun gn/clarify-actionable-item ()
-  ""
-  (interactive)
-  (if (y-or-n-p "Can you complete it in 2 min?")
-      (progn (message "DO IT NOW!")
-             (gn/next-todo)
-             (gn/next-todo))
-    (if (y-or-n-p "Can you delegate it?")
-        (progn (gn/clarify-reason "Why does the task have to be done?")
-               (org-set-tags ":delegate:")
-               (gn/insert-subheading "TODO Delegate task")
-               (org-previous-visible-heading 1)
-               (org-priority))
-      (progn (gn/clarify-reason "Why does the task have to be done?")
-             (org-set-tags-command)
-             (gn/insert-subheading "TODO Plan task")
-             (org-previous-visible-heading 1)
-             (org-priority)))))
-
-(defun gn/clarify-nonactionable-item ()
-  ""
-  (interactive)
-  (if (y-or-n-p "Do you need it for reference?")
-      (gn/clarify-reason "Why do you need it?")
-    (if (y-or-n-p "Is it potentially a future project?")
-        (gn/clarify-reason "Why do you ")
-      ())
-    ()))
-
-(defun gn/clarify-reason (question)
-  "Prompt for a reason and inserts both question and answer under the heading"
-  (interactive)
-  (->> (read-string question)
-    (concat question "\n- ")
-    (gn/insert-heading-content)))
-
-(defun gn/insert-heading-content (content)
-  "Insert content under heading"
-  (when (not (org-on-heading-p))
-    (error "You need to be on a heading for this command."))
-  (move-end-of-line 1)
-  (insert (concat "\n" content)))
-
-(defun gn/insert-subheading (heading-name)
-  "Insert subheading under current heading"
-  (interactive)
-  (when (not (org-on-heading-p))
-    (error "You need to be on a heading for this command."))
-  (org-narrow-to-subtree)
-  (let ((current-level (org-current-level)))
-    (goto-char (point-max))
-    (-> (+ current-level 1)
-      (-repeat "*")
-      (->> (--reduce (format "%s%s" acc it)))
-      ((lambda (subheading-stars) (concat "\n" subheading-stars " " heading-name)))
-      (insert)))
-  (widen))
-
-
-(defun gnorg/goto-toplevel-heading ()
-  "Go to toplevel heading"
-  (interactive)
-  (outline-heading 100))
+  (find-file gntodo/reference-path))
 
 (setq org-todo-keywords
       '((sequence "TODO" "DOING" "|" "DONE")
         (sequence "ON-HOLD(o)" "SCHEDULED(s)" "WAITING(w)" "CANCELLED(c)")))
 
-(defun gn/next-todo-string (current-todo)
+(defun gntodo/next-todo-string (current-todo)
   "Returns next todo"
   (cond ((or (equal current-todo "TODO")
              (equal current-todo "ON-HOLD")
@@ -326,36 +169,175 @@
         ((equal current-todo "DOING")
          "DONE")))
 
-(defun gn/current-todo-string ()
+(defun gntodo/current-todo-string ()
   (if (org-entry-is-todo-p)
       (-> (org-get-todo-state)
-        substring-no-properties)
+          substring-no-properties)
     nil))
 
-(defun gn/next-todo ()
+(defun gntodo/next-todo ()
   "Toggle TODO states"
   (interactive)
   (org-todo (if (org-entry-is-todo-p) 
-                (gn/next-todo-string (gn/current-todo-string))
+                (gntodo/next-todo-string (gntodo/current-todo-string))
               "TODO"))
-  (if (equal (gn/current-todo-string) "DOING")
+  (if (equal (gntodo/current-todo-string) "DOING")
       (org-clock-in)
     (org-clock-out)))
 
-(defun gn/current-task ()
+(setq org-capture-templates
+      '(("i" "Inbox" entry (file gntodo/inbox-path)
+         "* %?")
+        ))
+
+(setq org-refile-use-outline-path 'file)
+
+(setq org-refile-targets
+      '((gntodo/inbox-path :level . 0)
+        (gntodo/tasks-path :level . 0)
+        (gntodo/reference-path :level . 0)
+        (gntodo/incubator-path :level . 0)))
+
+(general-nmap org-capture-mode-map
+  [remap save-buffer] 'org-capture-finalize
+  [remap kill-current-buffer] 'org-capture-kill)
+
+(defun gntodo/add-todo (todo-name)
+    ""
+    (save-excursion
+      (org-insert-todo-heading-respect-content)
+      (gnorg/demote)
+      (insert todo-name)
+      ))
+
+  (defun gntodo/clarify-project-issue ()
+    "Clarify project_issue task type"
+    (org-set-tags "project_issue")
+    (if (y-or-n-p "Can you delegate it?")
+        (progn (org-set-tags "delegate")
+               (gntodo/add-todo "Write down delegatee")
+               (gntodo/add-todo "Delegate task"))
+      (gntodo/add-todo "Plan task"))
+    (gnorg/insert-heading-content "Why this issue needs to be addressed:
+  - "))
+
+  (defun gntodo/clarify-meeting ()
+    "Clarify meeting task type"
+    (org-set-tags "meeting")
+    (gntodo/add-todo "Prepare for meeting")
+    (gnorg/insert-heading-content "What this meeting is about:
+  - "))
+
+  (defun gntodo/clarify-reference ()
+    "Clarify reference task type"
+    (org-set-tags "reference")
+    (gntodo/add-todo "Organize reference")
+    (gntodo/add-todo "Add entry to reference file")
+    (gnorg/insert-heading-content "Why this reference is needed:
+  - "))
+
+  (defun gntodo/clarify-future-project ()
+    "Clarify future_project task type"
+    (org-set-tags "future_project")
+    (gntodo/add-todo "Write down project idea")
+    (gntodo/add-todo "Add entry to incubator file")
+    (gnorg/insert-heading-content "How this might be a future project:
+  - "))
+
+  (defun gntodo/clarify-other ()
+    "Clarify other task type"
+    (gnorg/insert-heading-content))
+
+
+  (defvar gntodo/project-issue-task-type
+    '(tag-name "project_issue"
+              clarify-function gntodo/clarify-project-issue))
+  (defvar gntodo/meeting-task-type
+    '(tag-name "meeting"
+              clarify-function gntodo/clarify-meeting))
+  (defvar gntodo/reference-task-type
+    '(tag-name "reference"
+              clarify-function gntodo/clarify-reference))
+  (defvar gntodo/future-project-task-type
+    '(tag-name "future_project"
+              clarify-function gntodo/clarify-future-project))
+  (defvar gntodo/other-task-type
+    '(tag-name "other"
+              clarify-function gntodo/clarify-other))
+
+  (defvar gntodo/task-type
+    '(gntodo/project-issue-task-type
+      gntodo/meeting-task-type
+      gntodo/reference-task-type
+      gntodo/future-project-task-type
+      gntodo/other-task-type))
+
+  (defun gntodo/clarify-inbox-item ()
+    "Clarify item"
+    (interactive)
+    (when (not (org-on-heading-p))
+      (error "You need to be on a heading to Clarify an item."))
+
+    (if (y-or-n-p "Is item a task you can complete in 2 min?")
+        (message "DO IT NOW!")
+      (progn
+        (when (y-or-n-p "Is item related to a project?")
+          (org-set-tags-command))
+        (->> gntodo/task-type
+             (--map (plist-get it 'tag-name))
+             (ivy-read "Choose type of item: ") 
+             ((lambda (chosen-tag-name) 
+                (-> gntodo/task-type
+                    (->> (--first (string= chosen-tag-name (plist-get it 'tag-name))))
+                    (plist-get 'clarify-function)
+                    (funcall)
+                    ))))))
+    (widen))
+
+  (defun gnorg/insert-heading-content (content)
+    "Insert content under heading"
+    (when (not (org-on-heading-p))
+      (error "You need to be on a heading for this command."))
+    (move-end-of-line 1)
+    (insert (concat "\n" content)))
+
+  (defun gnorg/insert-subheading (heading-name)
+    "Insert subheading under current heading"
+    (interactive)
+    (when (not (org-on-heading-p))
+      (error "You need to be on a heading for this command."))
+    (org-narrow-to-subtree)
+    (let ((current-level (org-current-level)))
+      (goto-char (point-max))
+      (-> (+ current-level 1)
+          (-repeat "*")
+          (->> (--reduce (format "%s%s" acc it)))
+          ((lambda (subheading-stars) (concat "\n" subheading-stars " " heading-name)))
+          (insert)))
+    (widen))
+
+
+  (defun gnorg/goto-toplevel-heading ()
+    "Go to toplevel heading"
+    (interactive)
+    (outline-heading 100))
+
+
+
+(defun gntodo/current-task ()
   "Show current task"
   (interactive)
-  (let ((current-task-point (gn/current-task-point)))
+  (let ((current-task-point (gntodo/current-task-point)))
     (if (numberp current-task-point)
-        (progn (gn/workflow-open-todo)
-               (goto-char (current-task-point))
+        (progn (gntodo/open-tasks)
+               (goto-char current-task-point)
                (org-narrow-to-subtree))
       (error "Current task not found."))))
 
-(defun gn/current-task-point ()
+(defun gntodo/current-task-point ()
   "Returns point of current task"
   (save-window-excursion
-    (gn/workflow-open-todo)
+    (gntodo/open-tasks)
     (widen)
     (goto-char (point-min))
     (search-forward-regexp "^\* DOING " nil t)
@@ -364,18 +346,17 @@
         nil
       (point))))
 
-(defun gn/next-task ()
-  ""
+(defun gntodo/next-task ()
+  "Set next task as doing"
   (interactive)
-  (gn/workflow-open-inbox)
+  (gntodo/open-inbox)
   (goto-char (point-min))
   (search-forward-regexp "^\* ")
-
   )
 
 (evil-set-initial-state 'org-agenda-mode 'normal)
 
-(setq org-agenda-files '("~/myworkflow/todo.org"))
+(setq org-agenda-files '("~/mytodo/tasks.org"))
 (setq org-agenda-log-mode-items '(state))
 
 (general-nmap org-src-mode-map
@@ -385,30 +366,30 @@
 ;; Don't confirm when evaluating src blocks
 (setq org-confirm-babel-evaluate nil)
 
-(defvar gn/org-template-path "~/todo/templates.org")
+(defvar gnorg/template-path "~/mytodo/templates.org")
 
-(defun gn/org-template ()
+(defun gnorg/template ()
   ""
   (with-temp-buffer
-    (insert-file-contents gn/org-template-path)
+    (insert-file-contents gnorg/template-path)
     (org-mode)
     (org-element-parse-buffer)))
 
-(defun gn/org-template-headlines (max-headline-level)
+(defun gnorg/template-headlines (max-headline-level)
   "Get org template headlines
 
 MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
-  (org-element-map (gn/org-template) 'headline
+  (org-element-map (gnorg/template) 'headline
     (lambda (h)
       (when (<= (org-element-property :level h)
                 max-headline-level)
         h))))
 
-(defvar gn/org-max-headline-level 2)
+(defvar gnorg/max-headline-level 2)
 
-(defun gn/org-insert-template ()
+(defun gnorg/insert-template ()
   (interactive)
-  (let ((headlines (gn/org-template-headlines gn/org-max-headline-level)))
+  (let ((headlines (gnorg/template-headlines gnorg/max-headline-level)))
     (->> headlines
          (-map (lambda
                  (headline)
@@ -431,7 +412,7 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
 (org-export-define-derived-backend 'gn-blog-post-vue 'html
   :options-alist '((:html_doctype "HTML_DOCTYPE" "HTML5" t)
                    (:html_container "HTML_CONTAINER" "div" t))
-  :translate-alist '((template . gn/org-blog-post-template)))
+  :translate-alist '((template . gnorg/blog-post-template)))
 
                                         ;(org-publish-project "gn-publish" t)
 
@@ -440,7 +421,7 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
                                         ;'"./\\(?=.+?.\\(png\\|jpg\\)\\)" 
                                         ;'(replace-regexp-in-string "./\\(?=.+?png\\)" "something" "<img src='./tessting.png'")
 
-(defun gn/org-blog-post-template (contents info)
+(defun gnorg/blog-post-template (contents info)
   "Template for org vue export"
   (concat
    "<template>\n"
@@ -460,14 +441,14 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
    "</script>\n"
    ))
 
-(defun gn/org-publish-as-blog-post
+(defun gnorg/publish-as-blog-post
     (&optional async subtreep visible-only body-only ext-plist)
   (interactive)
   (org-export-to-buffer 'gn-blog-post-vue "*Org HTML Export*"
     async subtreep visible-only body-only ext-plist
     (lambda () (set-auto-mode t))))
 
-(defun gn/org-publish-blog-post-interactive
+(defun gnorg/publish-blog-post-interactive
     (&optional async subtreep visible-only body-only ext-plist)
   (interactive)
   (unless (file-directory-p pub-dir)
@@ -478,7 +459,7 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
     (org-export-to-file 'gn-blog-post-vue file
       async subtreep visible-only body-only ext-plist)))
 
-(defun gn/org-publish-blog-post (plist filename pub-dir)
+(defun gnorg/publish-blog-post (plist filename pub-dir)
   (unless (file-directory-p pub-dir)
     (make-directory pub-dir t))
   (org-publish-org-to 'gn-blog-post-vue
@@ -492,9 +473,9 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
 (org-export-define-derived-backend 'gn-tummytracker-entry 'html
   :options-alist '((:html_doctype "HTML_DOCTYPE" "HTML5" t)
                    (:html_container "HTML_CONTAINER" "div" t))
-  :translate-alist '((template . gn/tummytracker-entry-template)))
+  :translate-alist '((template . gntummytracker/entry-template)))
 
-(defun gn/tummytracker-entry-template (contents info)
+(defun gntummytracker/entry-template (contents info)
   "Template for org vue export"
   (concat
    "<template>\n"
@@ -508,7 +489,7 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
    "</script>\n"
    ))
 
-(defun gn/tummytracker-publish-org-interactive
+(defun gntummytracker/publish-org-interactive
     (&optional async subtreep visible-only body-only ext-plist)
   (interactive)
   (unless (file-directory-p pub-dir)
@@ -519,7 +500,7 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
     (org-export-to-file 'gn-tummytracker-entry file
       async subtreep visible-only body-only ext-plist)))
 
-(defun gn/tummytracker-publish-org (plist filename pub-dir)
+(defun gntummytracker/publish-org (plist filename pub-dir)
   (unless (file-directory-p pub-dir)
     (make-directory pub-dir t))
   (org-publish-org-to 'gn-tummytracker-entry
@@ -538,7 +519,7 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
          :base-extension "org"
          :publishing-directory "~/things/web/pages/"
          :recursive t
-         :publishing-function gn/org-publish-blog-post
+         :publishing-function gnorg/publish-blog-post
          :headline-levels 4
          :auto-preamble t
          )
@@ -555,7 +536,7 @@ MAX-HEADLINE-LEVEL is an integer that specifies how deep to search headlines"
          :base-extension "org"
          :publishing-directory "~/tummytracker/app/src/pages/entry/"
          :recursive t
-         :publishing-function gn/tummytracker-publish-org
+         :publishing-function gntummytracker/publish-org
          :headline-levels 4
          :auto-preamble t)
         ))

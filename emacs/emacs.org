@@ -306,29 +306,29 @@ Prevent tabs when indenting
 *** Packages
 **** PlantUML
 #+begin_src emacs-lisp :results none
-      (use-package plantuml-mode)
+  (use-package plantuml-mode)
 
-      (setq plantuml-jar-path "~/myconfig/emacs/plantuml.jar")
-      (setq plantuml-default-exec-mode 'jar)
-      (setq plantuml-output-type "png")
-      (setq org-plantuml-jar-path (expand-file-name "~/myconfig/emacs/plantuml.jar"))
-      ;; Make plantuml available in org mode 
-      (add-to-list
-       'org-src-lang-modes '("plantuml" . plantuml))
+  (setq plantuml-jar-path "~/myconfig/emacs/plantuml.jar")
+  (setq plantuml-default-exec-mode 'jar)
+  (setq plantuml-output-type "png")
+  (setq org-plantuml-jar-path (expand-file-name "~/myconfig/emacs/plantuml.jar"))
+  ;; Make plantuml available in org mode 
+  (add-to-list
+   'org-src-lang-modes '("plantuml" . plantuml))
 
-      ;; Need this to evaluate plantuml src block
-      (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
+  ;; Need this to evaluate plantuml src block
+  (org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
 
-      (defun gn/preview-plantuml ()
-        "Preview plantuml diagram"
-        (interactive)
-        (let ((preview-window (get-buffer-window plantuml-preview-buffer)))
-          (when preview-window
-            (quit-window nil preview-window)))
-        (plantuml-preview 1))
+  (defun gn/preview-plantuml ()
+    "Preview plantuml diagram"
+    (interactive)
+    (let ((preview-window (get-buffer-window plantuml-preview-buffer)))
+      (when preview-window
+        (quit-window nil preview-window)))
+    (plantuml-preview 1))
 
-      (gn/leader-nvmap 'plantuml-mode-map
-       "e" 'gn/preview-plantuml)
+  (gn/leader-nvmap 'plantuml-mode-map
+   "e" 'gn/preview-plantuml)
 #+end_src
 
 **** Pomodoro
@@ -367,7 +367,7 @@ Prevent tabs when indenting
     
     
 
-*** Developmentk
+*** Development
    
 **** HTML/CSS
 #+begin_src emacs-lisp :results none
@@ -384,3 +384,9 @@ Prevent tabs when indenting
     
     
     
+*** LaTex
+#+begin_src emacs-lisp :results none
+  (use-package latex-preview-pane)
+
+  (latex-preivew-pane-enabled)
+#+end_src
