@@ -23,7 +23,7 @@
   "ids" 'org-schedule
   "il" 'org-insert-link
   "ii" 'org-id-get-create
-  "ib" '(org-insert-structure-template "insert code block")
+  "ib" '(org-insert-structure-template :which-key "insert code block")
   "it" 'counsel-org-tag
   "iT" 'gnorg/insert-template
   "D" 'org-cut-subtree
