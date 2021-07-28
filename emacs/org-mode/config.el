@@ -5,7 +5,7 @@
 
 (add-hook 'org-mode-hook (lambda ()
                            ;; make the lines in the buffer wrap around the edges of the screen.
-                           (visual-line-mode)
+                           (valign-mode)
                            (org-indent-mode)))
 (use-package valign)
 
