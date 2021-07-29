@@ -128,6 +128,10 @@
   (cond ((org-in-src-block-p) (org-edit-special))
         ((org-at-heading-p) (org-tree-to-indirect-buffer))))
 
+(setq org-priority-faces '((?A . (:foreground "red" :weight "bold"))
+                           (?B . (:foreground "orange"))
+                           (?C . (:foreground "yellow"))))
+
 (defvar gntodo/inbox-path "~/mytodo/inbox.org"
   "Path to the inbox file")
 

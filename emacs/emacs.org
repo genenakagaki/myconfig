@@ -384,9 +384,3 @@ Prevent tabs when indenting
     
     
     
-*** LaTex
-#+begin_src emacs-lisp :results none
-  (use-package latex-preview-pane)
-
-  (latex-preivew-pane-enabled)
-#+end_src

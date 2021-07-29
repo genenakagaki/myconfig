@@ -147,6 +147,24 @@
 
 #+end_src
     
+** Todo
+
+*** Priority
+#+begin_src emacs-lisp :results none
+  (setq org-priority-faces '((?A . (:foreground "red" :weight "bold"))
+                             (?B . (:foreground "orange"))
+                             (?C . (:foreground "yellow"))))
+#+end_src
+
+** Notification
+#+begin_src emacs-lisp :results none
+  (use-package alert)
+
+  (alert "this is an alert")
+
+  (notifications-notify :title "hello")
+#+end_src
+
 
 ** MyTodo
 The problem I am facing
