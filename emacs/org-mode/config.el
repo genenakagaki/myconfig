@@ -132,6 +132,12 @@
                            (?B . (:foreground "orange"))
                            (?C . (:foreground "yellow"))))
 
+(use-package alert)
+
+(alert "this is an alert")
+
+(notifications-notify :title "hello")
+
 (defvar gntodo/inbox-path "~/mytodo/inbox.org"
   "Path to the inbox file")
 
