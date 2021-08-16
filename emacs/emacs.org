@@ -312,6 +312,7 @@ Prevent tabs when indenting
   (setq plantuml-default-exec-mode 'jar)
   (setq plantuml-output-type "png")
   (setq org-plantuml-jar-path (expand-file-name "~/myconfig/emacs/plantuml.jar"))
+
   ;; Make plantuml available in org mode 
   (add-to-list
    'org-src-lang-modes '("plantuml" . plantuml))
@@ -349,23 +350,6 @@ Prevent tabs when indenting
           "v" 'magit-status)
         )
 #+end_src
-
-    
-    
-    
-     
-    
-    
-
-    
-    
-
-
-    
-    
-    
-    
-    
 
 *** Development
    
