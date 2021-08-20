@@ -3,11 +3,12 @@
 
 (setq org-return-follows-link t)
 
+(use-package valign)
+
 (add-hook 'org-mode-hook (lambda ()
                            ;; make the lines in the buffer wrap around the edges of the screen.
                            (valign-mode)
                            (org-indent-mode)))
-(use-package valign)
 
 (gn/leader-nvmap org-mode-map
   "e" 'org-ctrl-c-ctrl-c
