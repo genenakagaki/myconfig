@@ -359,6 +359,14 @@ Prevent tabs when indenting
 
 *** Development
    
+**** Clojure
+#+begin_src emacs-lisp :results none
+  (use-package cider)
+
+  (gn/leader-nmap cider-mode-map
+    "e" 'cider-eval-defun-at-point)
+#+end_src
+
 **** HTML/CSS
 #+begin_src emacs-lisp :results none
       (use-package web-mode)
