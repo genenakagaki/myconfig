@@ -283,13 +283,19 @@ Setup completion tool
 ** Editor 
 Prevent tabs when indenting
 #+begin_src emacs-lisp :results none
-     (setq-default indent-tabs-mode nil)
+  (setq-default indent-tabs-mode nil)
 
-     (column-number-mode)
-     (global-display-line-numbers-mode t)
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
 
-     (dolist (mode '(org-mode-hook))
-       (add-hook mode (lambda () (display-line-numbers-mode 0))))
+  (dolist (mode '(org-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+  ;;; turn the alarm sound off
+  (setq ring-bell-function 'ignore)
+
+  ;;; scroll line by line
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
 #+end_src
 
 ** Modules
