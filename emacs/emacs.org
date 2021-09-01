@@ -359,6 +359,9 @@ Prevent tabs when indenting
 
   (gn/leader-nmap cider-mode-map
     "e" 'cider-eval-defun-at-point)
+
+  (gn/leader-nmap clojure-mode-map
+    "e" 'cider-eval-defun-at-point)
 #+end_src
 
 **** HTML/CSS
