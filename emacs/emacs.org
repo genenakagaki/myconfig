@@ -368,6 +368,20 @@ Prevent tabs when indenting
 
   (gn/leader-nmap clojure-mode-map
     "e" 'cider-eval-defun-at-point)
+
+  ; eval expressions in comment blocks
+  (setq clojure-toplevel-inside-comment-form t)
+
+  (use-package company)
+
+  (global-company-mode)
+
+  (use-package projectile)
+
+  (projectile-mode +1)
+
+  (gn/leader-nmap
+    "o" 'projectile-command-map)
 #+end_src
 
 **** HTML/CSS
